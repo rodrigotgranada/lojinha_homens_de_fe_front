@@ -91,12 +91,12 @@ export default function PdvPage() {
         </div>
 
         {/* Main Split Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start flex-1">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start flex-1 min-h-0 md:h-[calc(100vh-250px)]">
           {/* Left Side: Catalog Search & Grid */}
           <div
             className={`${
               activeTab === "catalog" ? "flex" : "hidden"
-            } md:flex md:col-span-2 flex-col gap-5 h-full`}
+            } md:flex md:col-span-2 flex-col gap-5 h-full min-h-0`}
           >
             <PdvCatalog />
           </div>
@@ -105,7 +105,7 @@ export default function PdvPage() {
           <div
             className={`${
               activeTab === "cart" ? "block" : "hidden"
-            } md:block md:col-span-1 h-full sticky top-24`}
+            } md:block md:col-span-1 h-full min-h-0`}
           >
             <CartSidebar />
           </div>

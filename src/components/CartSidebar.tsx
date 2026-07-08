@@ -209,7 +209,7 @@ export const CartSidebar: React.FC = () => {
       </div>
 
       {/* Cart Items List */}
-      <div className="flex-1 overflow-y-auto space-y-3 pr-1 max-h-[30vh] md:max-h-none">
+      <div className="flex-1 overflow-y-auto space-y-3 pr-1 max-h-[30vh] md:max-h-none md:min-h-0 py-1">
         {cart.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500 py-10">
             <ShoppingBag className="h-12 w-12 stroke-1 mb-2 opacity-50" />
@@ -267,7 +267,7 @@ export const CartSidebar: React.FC = () => {
       </div>
 
       {/* Checkout Section */}
-      <div className="mt-6 border-t border-zinc-100 dark:border-zinc-800 pt-6 space-y-4">
+      <div className="mt-auto border-t border-zinc-100 dark:border-zinc-800 pt-4 space-y-4 shrink-0">
         {error && (
           <div className="bg-red-50 dark:bg-red-955/30 text-red-600 dark:text-red-400 p-3 rounded-xl text-sm font-semibold border border-red-100 dark:border-red-900/20">
             {error}
