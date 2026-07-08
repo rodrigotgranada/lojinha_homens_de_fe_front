@@ -10,40 +10,39 @@ export const PdvCatalog = () => {
     setSearch,
     selectedCategory,
     setSelectedCategory,
+    categories,
     loadingContent,
     filteredProducts
   } = usePdv();
 
   return (
     <div className="flex flex-col gap-5 h-full">
-      {/* Search bar */}
-      <div className="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800 flex items-center shadow-xs">
-        <Input
-          id="pdv-product-search"
-          placeholder="Pesquisar produto pelo nome..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="py-2.5"
-          icon={<Search className="h-5 w-5" />}
-        />
-      </div>
-
-      {/* Categories Tab Filters */}
-      <div className="flex gap-2 overflow-x-auto pb-1 shrink-0 scrollbar-none">
-        {["Todos", "Alimentação", "Vestuário", "Livros", "Acessórios", "Outros"].map((cat) => (
-          <button
-            key={cat}
-            type="button"
-            onClick={() => setSelectedCategory(cat)}
-            className={`px-4 py-2 rounded-xl text-xs font-black border transition-all cursor-pointer whitespace-nowrap ${
-              selectedCategory === cat
-                ? "bg-indigo-50 dark:bg-indigo-955/40 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900/40 shadow-xs"
-                : "bg-white dark:bg-zinc-900 text-zinc-550 dark:text-zinc-400 border-zinc-150 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800"
-            }`}
+      {/* Search & Filter Row */}
+      <div className="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800 flex flex-col md:flex-row gap-4 shadow-xs shrink-0">
+        <div className="flex-1">
+          <Input
+            id="pdv-product-search"
+            placeholder="Pesquisar produto pelo nome..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="py-2"
+            icon={<Search className="h-4.5 w-4.5" />}
+          />
+        </div>
+        <div className="w-full md:w-60 shrink-0">
+          <select
+            id="pdv-category-select"
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="w-full h-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs font-black uppercase tracking-wider text-zinc-700 dark:text-zinc-300 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer"
           >
-            {cat}
-          </button>
-        ))}
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat === "Todos" ? "TODAS AS CATEGORIAS" : cat.toUpperCase()}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Catalog grid */}
@@ -58,9 +57,9 @@ export const PdvCatalog = () => {
           <p className="text-xs">Tente ajustar a ortografia ou limpar o termo.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto max-h-[60vh] md:flex-1 md:min-h-0 pr-1 pb-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 overflow-y-auto max-h-[60vh] md:flex-1 md:min-h-0 pr-1 pb-4">
           {filteredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard key={product.id} product={product} compact={true} />
           ))}
         </div>
       )}

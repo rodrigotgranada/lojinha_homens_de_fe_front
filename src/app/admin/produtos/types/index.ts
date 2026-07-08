@@ -65,4 +65,5 @@ export interface ProdutosContextType {
   handleCropComplete: (croppedFile: File) => void;
   handleRemoveImage: () => void;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
+  categories: string[];
 }

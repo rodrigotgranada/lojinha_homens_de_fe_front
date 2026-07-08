@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, ChangeEvent, FormEvent } from "react";
 import { useApp } from "@/context/AppContext";
-import { Product, LogEntry } from "@/hooks/useApi";
+import { useApi, Product, LogEntry } from "@/hooks/useApi";
 import { productService } from "@/services/productService";
 import { uploadService } from "@/services/uploadService";
 import { logService } from "@/services/logService";
@@ -10,8 +10,10 @@ import { ActiveTab, ModalMode, ProdutosContextType, SortDir, SortField } from ".
 
 export const useProdutosState = (): ProdutosContextType => {
   const { currentUser, isLoading } = useApp();
+  const api = useApi();
 
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<string[]>(["Alimentação", "Vestuário", "Livros", "Acessórios", "Outros"]);
   const [loadingContent, setLoadingContent] = useState(true);
 
   // Form fields
@@ -120,19 +122,29 @@ export const useProdutosState = (): ProdutosContextType => {
   const fetchProducts = useCallback(async () => {
     setLoadingContent(true);
     try {
-      const prodList = await productService.getProducts(true);
+      const [prodList, catList] = await Promise.all([
+        productService.getProducts(true),
+        api.getCategories()
+      ]);
       setProducts(prodList);
+      setCategories([...new Set([...catList.map((c) => c.name), "Outros"])]);
     } catch (err) {
       console.warn("Could not fetch products. Falling back to local data.", err);
-      setProducts([
-        { id: "prod-1", name: "Camiseta Oficial Retiro", price: 60.0, stock: 50, imageUrl: "", active: true },
-        { id: "prod-2", name: "Bíblia de Estudos Nova", price: 120.0, stock: 15, imageUrl: "", active: true },
-        { id: "prod-3", name: "Garrafa Térmica Homens de Fé", price: 45.0, stock: 4, imageUrl: "", active: true }
-      ]);
+      try {
+        const prodList = await productService.getProducts(true);
+        setProducts(prodList);
+      } catch {
+        setProducts([
+          { id: "prod-1", name: "Camiseta Oficial Retiro", price: 60.0, stock: 50, imageUrl: "", active: true },
+          { id: "prod-2", name: "Bíblia de Estudos Nova", price: 120.0, stock: 15, imageUrl: "", active: true },
+          { id: "prod-3", name: "Garrafa Térmica Homens de Fé", price: 45.0, stock: 4, imageUrl: "", active: true }
+        ]);
+      }
+      setCategories(["Alimentação", "Vestuário", "Livros", "Acessórios", "Outros"]);
     } finally {
       setLoadingContent(false);
     }
-  }, []);
+  }, [api]);
 
   useEffect(() => {
     if (!isLoading && currentUser?.role === "ADMIN") {
@@ -555,5 +567,6 @@ export const useProdutosState = (): ProdutosContextType => {
     handleCropComplete,
     handleRemoveImage,
     handleSubmit,
+    categories,
   };
 };

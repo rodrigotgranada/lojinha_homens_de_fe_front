@@ -24,6 +24,13 @@ export interface User {
   active?: boolean;
 }
 
+export interface Category {
+  id: string;
+  name: string;
+  active?: boolean;
+  createdAt?: string;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -31,7 +38,7 @@ export interface Product {
   stock: number;
   imageUrl: string;
   active?: boolean;
-  category?: "Vestuário" | "Alimentação" | "Livros" | "Acessórios" | "Outros";
+  category?: string;
   minStock?: number;
   createdBy?: string;
   updatedBy?: string;
@@ -254,6 +261,30 @@ export const useApi = () => {
     return apiFetch<AnalyticsData>(`/sales/analytics/event/${eventId}`);
   };
 
+  const getCategories = async (): Promise<Category[]> => {
+    return apiFetch<Category[]>("/categories");
+  };
+
+  const createCategory = async (name: string): Promise<Category> => {
+    return apiFetch<Category>("/categories", {
+      method: "POST",
+      body: JSON.stringify({ name }),
+    });
+  };
+
+  const updateCategory = async (id: string, name: string): Promise<Category> => {
+    return apiFetch<Category>(`/categories/${id}`, {
+      method: "PUT",
+      body: JSON.stringify({ name }),
+    });
+  };
+
+  const deleteCategory = async (id: string): Promise<Category> => {
+    return apiFetch<Category>(`/categories/${id}`, {
+      method: "DELETE",
+    });
+  };
+
   return useMemo(() => ({
     getProducts,
     updateProductStock,
@@ -275,5 +306,9 @@ export const useApi = () => {
     getSalesByCustomer,
     cancelSale,
     getEventAnalytics,
+    getCategories,
+    createCategory,
+    updateCategory,
+    deleteCategory,
   }), []);
 };

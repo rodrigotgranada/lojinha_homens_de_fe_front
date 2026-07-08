@@ -10,4 +10,5 @@ export interface PdvContextProps {
   activeTab: "catalog" | "cart";
   setActiveTab: (tab: "catalog" | "cart") => void;
   filteredProducts: Product[];
+  categories: string[];
 }

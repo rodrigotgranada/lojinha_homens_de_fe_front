@@ -7,6 +7,7 @@ export const usePdvState = () => {
   const api = useApi();
 
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<string[]>(["Todos"]);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [loadingContent, setLoadingContent] = useState(true);
@@ -17,16 +18,26 @@ export const usePdvState = () => {
   const fetchPdvProducts = useCallback(async () => {
     setLoadingContent(true);
     try {
-      const prodList = await api.getProducts();
-      setProducts(prodList);
-    } catch (err) {
-      console.warn("Could not fetch products for PDV. Fallback.", err);
-      setProducts([
-        { id: "prod-1", name: "Camiseta Oficial Retiro", price: 60.0, stock: 50, imageUrl: "" },
-        { id: "prod-2", name: "Bíblia de Estudos Nova", price: 120.0, stock: 15, imageUrl: "" },
-        { id: "prod-3", name: "Garrafa Térmica Homens de Fé", price: 45.0, stock: 4, imageUrl: "" },
-        { id: "prod-4", name: "Boné Bordado", price: 35.0, stock: 25, imageUrl: "" }
+      const [prodList, catList] = await Promise.all([
+        api.getProducts(),
+        api.getCategories()
       ]);
+      setProducts(prodList);
+      setCategories(["Todos", ...catList.map((c) => c.name)]);
+    } catch (err) {
+      console.warn("Could not fetch products or categories for PDV. Fallback.", err);
+      try {
+        const prodList = await api.getProducts();
+        setProducts(prodList);
+      } catch {
+        setProducts([
+          { id: "prod-1", name: "Camiseta Oficial Retiro", price: 60.0, stock: 50, imageUrl: "" },
+          { id: "prod-2", name: "Bíblia de Estudos Nova", price: 120.0, stock: 15, imageUrl: "" },
+          { id: "prod-3", name: "Garrafa Térmica Homens de Fé", price: 45.0, stock: 4, imageUrl: "" },
+          { id: "prod-4", name: "Boné Bordado", price: 35.0, stock: 25, imageUrl: "" }
+        ]);
+      }
+      setCategories(["Todos", "Alimentação", "Vestuário", "Livros", "Acessórios", "Outros"]);
     } finally {
       setLoadingContent(false);
     }
@@ -104,6 +115,7 @@ export const usePdvState = () => {
     setSearch,
     selectedCategory,
     setSelectedCategory,
+    categories,
     loadingContent,
     activeTab,
     setActiveTab,

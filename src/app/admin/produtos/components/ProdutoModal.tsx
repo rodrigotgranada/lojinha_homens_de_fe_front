@@ -41,7 +41,8 @@ export const ProdutoModal: React.FC = () => {
     handleFileChange,
     handleCropComplete,
     handleRemoveImage,
-    handleSubmit
+    handleSubmit,
+    categories
   } = useProdutos();
 
   return (
@@ -261,11 +262,11 @@ export const ProdutoModal: React.FC = () => {
                     onChange={(e) => setCategory(e.target.value)}
                     className="bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer h-[46px]"
                   >
-                    <option value="Alimentação">Alimentação</option>
-                    <option value="Vestuário">Vestuário</option>
-                    <option value="Livros">Livros</option>
-                    <option value="Acessórios">Acessórios</option>
-                    <option value="Outros">Outros</option>
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>

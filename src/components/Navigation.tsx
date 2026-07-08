@@ -21,13 +21,15 @@ import {
   Zap,
   Sun,
   Moon,
-  Monitor
+  Monitor,
+  Tag
 } from "lucide-react";
 
 const adminLinks = [
   { name: "Painel", href: "/admin", icon: <LayoutDashboard className="h-4 w-4" /> },
   { name: "PDV", href: "/admin/pdv", icon: <Store className="h-4 w-4" /> },
   { name: "Estoque", href: "/admin/produtos", icon: <Boxes className="h-4 w-4" /> },
+  { name: "Categorias", href: "/admin/categorias", icon: <Tag className="h-4 w-4" /> },
   { name: "Eventos", href: "/admin/eventos", icon: <Calendar className="h-4 w-4" /> },
   { name: "Vendas", href: "/admin/vendas", icon: <FileText className="h-4 w-4" /> },
   { name: "Clientes", href: "/admin/clientes", icon: <User className="h-4 w-4" /> },
