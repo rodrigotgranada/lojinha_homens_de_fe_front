@@ -49,29 +49,31 @@ export default function HomePage() {
     }
   }, [api, currentUser]);
 
-  // Fetch Psalm of the Day from a free public API
+  // Curated list of inspirational Psalms for church retreats
+  const PSALMS_LIST: PsalmData[] = [
+    { text: "O Senhor é o meu pastor, nada me faltará.", reference: "Salmos 23:1" },
+    { text: "Deus é o nosso refúgio e a nossa fortaleza, auxílio sempre presente na adversidade.", reference: "Salmos 46:1" },
+    { text: "Entrega o teu caminho ao Senhor; confia nele, e ele agirá.", reference: "Salmos 37:5" },
+    { text: "O meu socorro vem do Senhor, que fez os céus e a terra.", reference: "Salmos 121:2" },
+    { text: "Provai e vede que o Senhor é bom; bem-aventurado o homem que nele se refugia.", reference: "Salmos 34:8" },
+    { text: "Pois o Senhor é bom e a sua misericórdia dura para sempre; a sua fidelidade estende-se de geração a geração.", reference: "Salmos 100:5" },
+    { text: "Lâmpada para os meus pés é tua palavra, e luz para o meu caminho.", reference: "Salmos 119:105" },
+    { text: "Os que confiam no Senhor são como o monte Sião, que não se abala, mas permanece para sempre.", reference: "Salmos 125:1" },
+    { text: "Faze-me ouvir do teu amor leal pela manhã, pois em ti confio. Mostra-me o caminho que devo seguir, pois a ti elevo a minha alma.", reference: "Salmos 143:8" },
+    { text: "Aquele que habita no abrigo do Altíssimo e descansa à sombra do Todo-poderoso pode dizer ao Senhor: Tu és o meu refúgio e a minha fortaleza, o meu Deus, em quem confio.", reference: "Salmos 91:1-2" }
+  ];
+
+  // Select a random Psalm on mount
   useEffect(() => {
-    async function fetchPsalm() {
-      try {
-        setLoadingPsalm(true);
-        const res = await fetch("https://www.abibliadigital.com.br/api/verses/nvi/sl/random");
-        if (!res.ok) throw new Error("API error");
-        const data = await res.json();
-        setPsalm({
-          text: data.text,
-          reference: `Salmos ${data.chapter}:${data.number}`
-        });
-      } catch (err) {
-        console.warn("Failed to fetch psalm from API, falling back to Psalm 23:1", err);
-        setPsalm({
-          text: "O Senhor é o meu pastor, nada me faltará.",
-          reference: "Salmos 23:1"
-        });
-      } finally {
-        setLoadingPsalm(false);
-      }
+    setLoadingPsalm(true);
+    try {
+      const randomIndex = Math.floor(Math.random() * PSALMS_LIST.length);
+      setPsalm(PSALMS_LIST[randomIndex]);
+    } catch (err) {
+      setPsalm(PSALMS_LIST[0]);
+    } finally {
+      setLoadingPsalm(false);
     }
-    fetchPsalm();
   }, []);
 
   useEffect(() => {
