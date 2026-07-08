@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { usePdvState } from "./hooks/usePdvState";
 import { PdvProvider } from "./context/PdvContext";
 import { PdvHeader } from "./components/PdvHeader";
@@ -18,6 +18,30 @@ export default function PdvPage() {
     activeTab,
     setActiveTab
   } = pdvState;
+
+  // Custom Full Screen Layout for PDV: Hide footer & negate padding top/bottom
+  useEffect(() => {
+    const footer = document.querySelector("footer");
+    const main = document.querySelector("main");
+    
+    if (footer) footer.style.display = "none";
+    if (main) {
+      main.style.paddingTop = "0px";
+      main.style.paddingBottom = "0px";
+      main.style.height = "calc(100vh - 64px)";
+      main.style.maxHeight = "calc(100vh - 64px)";
+    }
+    
+    return () => {
+      if (footer) footer.style.display = "";
+      if (main) {
+        main.style.paddingTop = "";
+        main.style.paddingBottom = "";
+        main.style.height = "";
+        main.style.maxHeight = "";
+      }
+    };
+  }, []);
 
   // Security Check: Loading
   if (isLoading) {
@@ -37,7 +61,7 @@ export default function PdvPage() {
             <ShieldAlert className="h-8 w-8" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-2xl font-black text-zinc-950 dark:text-white">Acesso Restrito</h2>
+            <h2 className="text-2xl font-black text-zinc-955 dark:text-white">Acesso Restrito</h2>
             <p className="text-zinc-500 dark:text-zinc-400 text-sm">
               Esta área é reservada para voluntários e administradores do PDV.
             </p>
@@ -55,7 +79,7 @@ export default function PdvPage() {
 
   return (
     <PdvProvider value={pdvState}>
-      <div className="flex-1 flex flex-col gap-6 py-4 h-full">
+      <div className="flex-1 flex flex-col gap-6 py-4 h-full min-h-0">
         {/* PDV Header */}
         <PdvHeader />
 
@@ -91,7 +115,7 @@ export default function PdvPage() {
         </div>
 
         {/* Main Split Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start flex-1 min-h-0 md:h-[calc(100vh-250px)]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1 min-h-0">
           {/* Left Side: Catalog Search & Grid */}
           <div
             className={`${
