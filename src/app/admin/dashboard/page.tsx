@@ -69,7 +69,7 @@ export default function DashboardPage() {
   return (
     <DashboardProvider value={dashboardState}>
       <div className="flex-1 flex flex-col gap-6 py-6 max-w-7xl mx-auto w-full px-4">
-        
+
         {/* Header and Event Selector */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
@@ -125,9 +125,9 @@ export default function DashboardPage() {
         {/* Dynamic Charts Grid */}
         {analytics && analytics.summary.totalSalesCount > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <SalesChart />
-            <CategoryChart />
             <TopProductsChart />
+            <CategoryChart />
+            <SalesChart />
             <TopBuyersList />
             <RecentSalesTable />
           </div>
