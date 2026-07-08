@@ -90,7 +90,7 @@ export const Navigation: React.FC = () => {
                 href="/"
                 className="flex items-center gap-2 font-black text-base tracking-tight text-indigo-600 dark:text-indigo-400 shrink-0"
               >
-                <img src="/iconeLoja.png" alt="Logo" className="w-6 h-6 object-contain" />
+                <img src="/icone.png" alt="Logo" className="h-9 w-auto max-w-[45px] object-contain" />
                 <span className="hidden sm:block">Lojinha Retiro</span>
               </Link>
 
@@ -99,11 +99,10 @@ export const Navigation: React.FC = () => {
                 <div className="hidden sm:block relative" ref={navDropRef}>
                   <button
                     onClick={() => { setNavDropOpen(!navDropOpen); setUserDropOpen(false); }}
-                    className={`flex items-center gap-1.5 px-3.5 py-2 text-sm font-bold rounded-xl border transition-all cursor-pointer ${
-                      navDropOpen
+                    className={`flex items-center gap-1.5 px-3.5 py-2 text-sm font-bold rounded-xl border transition-all cursor-pointer ${navDropOpen
                         ? "bg-indigo-50 border-indigo-200 text-indigo-600 dark:bg-indigo-950/40 dark:border-indigo-900/30 dark:text-indigo-400"
                         : "border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800"
-                    }`}
+                      }`}
                   >
                     {activeLink?.icon ?? <LayoutDashboard className="h-4 w-4" />}
                     <span className="max-w-[120px] truncate">{activeLink?.name ?? "Navegar"}</span>
@@ -119,11 +118,10 @@ export const Navigation: React.FC = () => {
                             key={link.href}
                             href={link.href}
                             onClick={() => setNavDropOpen(false)}
-                            className={`flex items-center gap-3 px-4 py-2.5 text-sm font-semibold transition-all ${
-                              isActive
+                            className={`flex items-center gap-3 px-4 py-2.5 text-sm font-semibold transition-all ${isActive
                                 ? "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400"
                                 : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800"
-                            }`}
+                              }`}
                           >
                             <span className="opacity-60">{link.icon}</span>
                             {link.name}
@@ -239,7 +237,7 @@ export const Navigation: React.FC = () => {
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center gap-2 font-black text-base text-indigo-600 dark:text-indigo-400"
               >
-                <img src="/iconeLoja.png" alt="Logo" className="w-5 h-5 object-contain" /> Lojinha Retiro
+                <img src="/icone.png" alt="Logo" className="h-8 w-auto max-w-[36px] object-contain" /> Lojinha Retiro
               </Link>
               <button
                 onClick={() => setMobileOpen(false)}
@@ -269,11 +267,10 @@ export const Navigation: React.FC = () => {
                     key={link.href}
                     href={link.href}
                     onClick={() => setMobileOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
-                      isActive
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${isActive
                         ? "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400"
                         : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-850"
-                    }`}
+                      }`}
                   >
                     <span className={isActive ? "text-indigo-500" : "text-zinc-400"}>{link.icon}</span>
                     {link.name}
