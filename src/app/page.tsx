@@ -3,9 +3,13 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useApp } from "@/context/AppContext";
 import { useApi, Product, Sale } from "@/hooks/useApi";
-import { ProductCard } from "@/components/ProductCard";
 import Link from "next/link";
-import { LogIn, UserPlus, FileText, ShoppingCart, Calendar, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import { LogIn, FileText, Calendar, Clock, CheckCircle, AlertCircle, BookOpen } from "lucide-react";
+
+interface PsalmData {
+  text: string;
+  reference: string;
+}
 
 export default function HomePage() {
   const { currentUser, activeEvent, isLoading } = useApp();
@@ -15,50 +19,60 @@ export default function HomePage() {
   const [sales, setSales] = useState<Sale[]>([]);
   const [loadingContent, setLoadingContent] = useState(true);
 
+  // Psalm of the Day states
+  const [psalm, setPsalm] = useState<PsalmData | null>(null);
+  const [loadingPsalm, setLoadingPsalm] = useState(true);
+
   const fetchHomeData = useCallback(async () => {
     setLoadingContent(true);
     try {
-      // Fetch catalog
       const prodList = await api.getProducts();
       setProducts(prodList);
 
-      // Fetch user purchases if logged in
       if (currentUser) {
-        // If admin, fetch all sales, if customer, fetch customer sales
         const salesList = currentUser.role === "ADMIN" 
           ? await api.getSales() 
           : await api.getSalesByCustomer(currentUser.id);
         
-        // Sort sales descending by date
         salesList.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         setSales(salesList);
       }
     } catch (err) {
       console.warn("Could not load API data for home. Running fallbacks.", err);
-      // Fallback data
       setProducts([
         { id: "prod-1", name: "Camiseta Oficial Retiro", price: 60.0, stock: 50, imageUrl: "" },
         { id: "prod-2", name: "Bíblia de Estudos Nova", price: 120.0, stock: 15, imageUrl: "" },
-        { id: "prod-3", name: "Garrafa Térmica Homens de Fé", price: 45.0, stock: 4, imageUrl: "" },
-        { id: "prod-4", name: "Boné Bordado", price: 35.0, stock: 25, imageUrl: "" }
+        { id: "prod-3", name: "Garrafa Térmica Homens de Fé", price: 45.0, stock: 4, imageUrl: "" }
       ]);
-      if (currentUser && currentUser.id === "usr-1") {
-        setSales([
-          {
-            id: "sale-1",
-            customerId: "usr-1",
-            eventId: "evt-1",
-            items: [{ productId: "prod-1", quantity: 1, priceAtPurchase: 60.0 }],
-            totalPrice: 60.0,
-            status: "PENDENTE",
-            createdAt: new Date().toISOString()
-          }
-        ]);
-      }
     } finally {
       setLoadingContent(false);
     }
   }, [api, currentUser]);
+
+  // Fetch Psalm of the Day from a free public API
+  useEffect(() => {
+    async function fetchPsalm() {
+      try {
+        setLoadingPsalm(true);
+        const res = await fetch("https://www.abibliadigital.com.br/api/verses/nvi/sl/random");
+        if (!res.ok) throw new Error("API error");
+        const data = await res.json();
+        setPsalm({
+          text: data.text,
+          reference: `Salmos ${data.chapter}:${data.number}`
+        });
+      } catch (err) {
+        console.warn("Failed to fetch psalm from API, falling back to Psalm 23:1", err);
+        setPsalm({
+          text: "O Senhor é o meu pastor, nada me faltará.",
+          reference: "Salmos 23:1"
+        });
+      } finally {
+        setLoadingPsalm(false);
+      }
+    }
+    fetchPsalm();
+  }, []);
 
   useEffect(() => {
     if (!isLoading) {
@@ -83,40 +97,6 @@ export default function HomePage() {
     };
   }, []);
 
-  // Real-time status sync via custom WS event
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const handleStatusUpdate = (e: Event) => {
-      const { productId, active } = (e as CustomEvent).detail;
-      setProducts((prev) =>
-        prev.map((p) => (p.id === productId ? { ...p, active } : p))
-      );
-    };
-
-    window.addEventListener("product_status_updated", handleStatusUpdate);
-    return () => {
-      window.removeEventListener("product_status_updated", handleStatusUpdate);
-    };
-  }, []);
-
-  // Real-time general product updates via custom WS event
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const handleProductUpdate = (e: Event) => {
-      const updatedProduct = (e as CustomEvent).detail as Product;
-      setProducts((prev) =>
-        prev.map((p) => (p.id === updatedProduct.id ? updatedProduct : p))
-      );
-    };
-
-    window.addEventListener("product_updated", handleProductUpdate);
-    return () => {
-      window.removeEventListener("product_updated", handleProductUpdate);
-    };
-  }, []);
-
   // Helper to find product name
   const getProductName = (productId: string) => {
     const prod = products.find((p) => p.id === productId);
@@ -130,7 +110,7 @@ export default function HomePage() {
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
         </svg>
-        <span className="text-zinc-500 font-semibold text-sm">Carregando painel...</span>
+        <span className="text-zinc-550 font-semibold text-sm">Carregando painel...</span>
       </div>
     );
   }
@@ -138,7 +118,7 @@ export default function HomePage() {
   // Not Logged In View
   if (!currentUser) {
     return (
-      <div className="flex-1 flex flex-col gap-12 py-6">
+      <div className="flex-1 flex flex-col gap-8 py-6">
         {/* Banner Hero */}
         <div className="bg-linear-to-r from-blue-600 via-indigo-600 to-violet-600 rounded-3xl p-8 md:p-12 text-white shadow-xl relative overflow-hidden flex flex-col items-start gap-6">
           <div className="absolute right-0 bottom-0 top-0 opacity-10 flex items-center justify-center pr-10 pointer-events-none">
@@ -163,30 +143,45 @@ export default function HomePage() {
               className="flex items-center gap-2 bg-white hover:bg-zinc-50 text-indigo-700 font-bold px-6 py-3.5 rounded-xl shadow-lg transition-all cursor-pointer"
             >
               <LogIn className="h-5 w-5" />
-              Acessar Painel Admin
+              Acessar Painel Admin / Operador
             </Link>
           </div>
         </div>
 
-        {/* Catalog Preview */}
-        <div className="space-y-6">
-          <div className="flex flex-col gap-1">
-            <h2 className="text-2xl font-black text-zinc-900 dark:text-white flex items-center gap-2">
-              <ShoppingCart className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-              Nossos Produtos
+        {/* Salmo do Dia Hero Section */}
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-150 dark:border-zinc-800 rounded-3xl p-8 text-center shadow-md relative overflow-hidden flex flex-col items-center justify-center gap-4 w-full">
+          <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05] pointer-events-none flex items-center justify-center">
+            <span className="text-[120px] font-black font-serif italic select-none">Bíblia</span>
+          </div>
+          
+          <div className="space-y-2 relative z-10">
+            <span className="bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 text-[10px] font-extrabold uppercase tracking-widest px-3 py-1 rounded-full border border-indigo-100 dark:border-indigo-900/30 flex items-center gap-1.5 justify-center w-fit mx-auto">
+              <BookOpen className="h-3.5 w-3.5" />
+              Palavra do Dia
+            </span>
+            <h2 className="text-2xl font-black text-zinc-950 dark:text-white mt-2">
+              Salmo do Dia
             </h2>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              Faça login no painel para realizar vendas, gerenciar estoque ou auditar transações.
-            </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {products.map((product) => (
-              <div key={product.id} className="opacity-85 pointer-events-none">
-                <ProductCard product={product} />
-              </div>
-            ))}
-          </div>
+          {loadingPsalm ? (
+            <div className="flex flex-col items-center gap-2 py-4">
+              <svg className="animate-spin h-6 w-6 text-indigo-650" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              <span className="text-xs text-zinc-400 font-semibold">Buscando palavra na Bíblia Sagrada...</span>
+            </div>
+          ) : psalm ? (
+            <div className="space-y-4 max-w-2xl relative z-10 py-2">
+              <p className="text-lg md:text-xl font-medium text-zinc-700 dark:text-zinc-300 italic leading-relaxed font-serif">
+                &ldquo;{psalm.text}&rdquo;
+              </p>
+              <p className="text-sm font-bold text-zinc-500 dark:text-zinc-500 font-mono">
+                — {psalm.reference}
+              </p>
+            </div>
+          ) : null}
         </div>
       </div>
     );
@@ -219,7 +214,7 @@ export default function HomePage() {
         )}
       </div>
 
-      {/* Grid: Purchase History (full width or sidebar depending on content) */}
+      {/* Grid: Purchase History */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         {/* Purchase History */}
         <div className="lg:col-span-2 space-y-6">
