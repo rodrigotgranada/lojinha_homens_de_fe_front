@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { Product, Event, User, useApi } from "@/hooks/useApi";
+import { io } from "socket.io-client";
 
 export interface CartItem {
   product: Product;
@@ -88,51 +89,48 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     const socketUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-    
-    // Lazy load socket.io-client to avoid SSR issues
-    import("socket.io-client").then(({ io }) => {
-      const socket = io(socketUrl);
+    const socket = io(socketUrl);
 
-      socket.on("connect", () => {
-        console.log("WebSocket connected to backend:", socketUrl);
-      });
-
-      socket.on("stock_changed", (data: { productId: string; newStock: number }) => {
-        window.dispatchEvent(
-          new CustomEvent("product_stock_updated", {
-            detail: { productId: data.productId, newStock: data.newStock },
-          })
-        );
-      });
-
-      socket.on("product_status_changed", (data: { productId: string; active: boolean }) => {
-        window.dispatchEvent(
-          new CustomEvent("product_status_updated", {
-            detail: { productId: data.productId, active: data.active },
-          })
-        );
-      });
-
-      socket.on("product_changed", (updatedProduct: any) => {
-        window.dispatchEvent(
-          new CustomEvent("product_updated", {
-            detail: updatedProduct,
-          })
-        );
-      });
-
-      socket.on("log_added", (log: any) => {
-        window.dispatchEvent(
-          new CustomEvent("log_added", {
-            detail: log,
-          })
-        );
-      });
-
-      return () => {
-        socket.disconnect();
-      };
+    socket.on("connect", () => {
+      console.log("WebSocket connected to backend:", socketUrl);
     });
+
+    socket.on("stock_changed", (data: { productId: string; newStock: number }) => {
+      window.dispatchEvent(
+        new CustomEvent("product_stock_updated", {
+          detail: { productId: data.productId, newStock: data.newStock },
+        })
+      );
+    });
+
+    socket.on("product_status_changed", (data: { productId: string; active: boolean }) => {
+      window.dispatchEvent(
+        new CustomEvent("product_status_updated", {
+          detail: { productId: data.productId, active: data.active },
+        })
+      );
+    });
+
+    socket.on("product_changed", (updatedProduct: any) => {
+      window.dispatchEvent(
+        new CustomEvent("product_updated", {
+          detail: updatedProduct,
+        })
+      );
+    });
+
+    socket.on("log_added", (log: any) => {
+      window.dispatchEvent(
+        new CustomEvent("log_added", {
+          detail: log,
+        })
+      );
+    });
+
+    return () => {
+      console.log("Disconnecting WebSocket connection...");
+      socket.disconnect();
+    };
   }, []);
 
   // Cart operations
