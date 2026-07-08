@@ -18,7 +18,10 @@ import {
   FileText,
   ChevronDown,
   Activity,
-  Zap
+  Zap,
+  Sun,
+  Moon,
+  Monitor
 } from "lucide-react";
 
 const adminLinks = [
@@ -39,12 +42,56 @@ export const Navigation: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [navDropOpen, setNavDropOpen] = useState(false);
   const [userDropOpen, setUserDropOpen] = useState(false);
+  const [themeDropOpen, setThemeDropOpen] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark" | "system">("system");
   const [mounted, setMounted] = useState(false);
 
   const navDropRef = useRef<HTMLDivElement>(null);
   const userDropRef = useRef<HTMLDivElement>(null);
+  const themeDropRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { setMounted(true); }, []);
+  const applyTheme = (t: "light" | "dark" | "system") => {
+    if (typeof window === "undefined") return;
+    const root = window.document.documentElement;
+    root.classList.remove("light", "dark");
+    
+    if (t === "system") {
+      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      root.classList.add(systemTheme);
+    } else {
+      root.classList.add(t);
+    }
+  };
+
+  useEffect(() => {
+    setMounted(true);
+    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | "system" | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
+      applyTheme(savedTheme);
+    } else {
+      applyTheme("system");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = () => {
+      if (theme === "system") {
+        applyTheme("system");
+      }
+    };
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, [theme]);
+
+  const handleThemeChange = (newTheme: "light" | "dark" | "system") => {
+    setTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
+    applyTheme(newTheme);
+    setThemeDropOpen(false);
+  };
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -54,6 +101,9 @@ export const Navigation: React.FC = () => {
       }
       if (userDropRef.current && !userDropRef.current.contains(e.target as Node)) {
         setUserDropOpen(false);
+      }
+      if (themeDropRef.current && !themeDropRef.current.contains(e.target as Node)) {
+        setThemeDropOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -145,6 +195,57 @@ export const Navigation: React.FC = () => {
 
             {/* Right: User dropdown (desktop) + Mobile hamburger */}
             <div className="flex items-center gap-2">
+              
+              {/* Desktop Theme Switcher */}
+              <div className="hidden sm:block relative" ref={themeDropRef}>
+                <button
+                  onClick={() => { setThemeDropOpen(!themeDropOpen); setUserDropOpen(false); setNavDropOpen(false); }}
+                  className="p-2 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-800 cursor-pointer flex items-center justify-center transition-all"
+                  title="Alterar Tema"
+                >
+                  {theme === "light" && <Sun className="h-4.5 w-4.5" />}
+                  {theme === "dark" && <Moon className="h-4.5 w-4.5" />}
+                  {theme === "system" && <Monitor className="h-4.5 w-4.5" />}
+                </button>
+
+                {themeDropOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-36 bg-white dark:bg-zinc-900 border border-zinc-150 dark:border-zinc-800 rounded-2xl shadow-xl overflow-hidden z-50 p-1">
+                    <button
+                      onClick={() => handleThemeChange("light")}
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                        theme === "light"
+                          ? "bg-indigo-50 dark:bg-indigo-955/20 text-indigo-650 dark:text-indigo-400"
+                          : "text-zinc-700 dark:text-zinc-350 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                      }`}
+                    >
+                      <Sun className="h-3.5 w-3.5" />
+                      Claro
+                    </button>
+                    <button
+                      onClick={() => handleThemeChange("dark")}
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                        theme === "dark"
+                          ? "bg-indigo-50 dark:bg-indigo-955/20 text-indigo-650 dark:text-indigo-400"
+                          : "text-zinc-700 dark:text-zinc-350 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                      }`}
+                    >
+                      <Moon className="h-3.5 w-3.5" />
+                      Escuro
+                    </button>
+                    <button
+                      onClick={() => handleThemeChange("system")}
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                        theme === "system"
+                          ? "bg-indigo-50 dark:bg-indigo-955/20 text-indigo-650 dark:text-indigo-400"
+                          : "text-zinc-700 dark:text-zinc-350 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                      }`}
+                    >
+                      <Monitor className="h-3.5 w-3.5" />
+                      Sistema
+                    </button>
+                  </div>
+                )}
+              </div>
               {/* Desktop user area */}
               {currentUser ? (
                 <div className="hidden sm:block relative" ref={userDropRef}>
@@ -289,6 +390,31 @@ export const Navigation: React.FC = () => {
                   Acessar Painel
                 </Link>
               )}
+            </div>
+
+            {/* Theme switcher at bottom of drawer */}
+            <div className="px-5 py-4 border-t border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-950/20">
+              <span className="text-xs font-bold text-zinc-550 dark:text-zinc-400">Tema do Sistema</span>
+              <div className="flex gap-1 p-0.5 bg-zinc-100 dark:bg-zinc-850 border border-zinc-200/50 dark:border-zinc-800/80 rounded-xl">
+                <button
+                  onClick={() => handleThemeChange("light")}
+                  className={`p-1.5 rounded-lg transition-all cursor-pointer ${theme === "light" ? "bg-white dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 shadow-xs" : "text-zinc-400 hover:text-zinc-600"}`}
+                >
+                  <Sun className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => handleThemeChange("dark")}
+                  className={`p-1.5 rounded-lg transition-all cursor-pointer ${theme === "dark" ? "bg-white dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 shadow-xs" : "text-zinc-400 hover:text-zinc-600"}`}
+                >
+                  <Moon className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => handleThemeChange("system")}
+                  className={`p-1.5 rounded-lg transition-all cursor-pointer ${theme === "system" ? "bg-white dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 shadow-xs" : "text-zinc-400 hover:text-zinc-600"}`}
+                >
+                  <Monitor className="h-4 w-4" />
+                </button>
+              </div>
             </div>
 
             {/* User section at bottom */}

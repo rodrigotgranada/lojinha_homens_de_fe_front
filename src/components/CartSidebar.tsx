@@ -38,6 +38,9 @@ export const CartSidebar: React.FC = () => {
   const [isReactivateModalOpen, setIsReactivateModalOpen] = useState(false);
   const [reactivating, setReactivating] = useState(false);
 
+  // Cart Item Removal confirmation state
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+
   // Format CPF as 999.999.999-99
   const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawVal = e.target.value.replace(/\D/g, "");
@@ -190,6 +193,14 @@ export const CartSidebar: React.FC = () => {
     }
   };
 
+  const handleDecrement = (productId: string, currentQty: number) => {
+    if (currentQty === 1) {
+      setItemToDelete(productId);
+    } else {
+      updateQuantity(productId, currentQty - 1);
+    }
+  };
+
   const formatCpf = (c: string) => {
     const clean = c.replace(/\D/g, "");
     if (clean.length !== 11) return c;
@@ -235,7 +246,7 @@ export const CartSidebar: React.FC = () => {
               <div className="flex items-center bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-1">
                 <button
                   type="button"
-                  onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                  onClick={() => handleDecrement(item.product.id, item.quantity)}
                   className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-850 rounded-md text-zinc-550 cursor-pointer"
                 >
                   <Minus className="h-3.5 w-3.5" />
@@ -256,7 +267,7 @@ export const CartSidebar: React.FC = () => {
               {/* Delete button */}
               <button
                 type="button"
-                onClick={() => removeFromCart(item.product.id)}
+                onClick={() => setItemToDelete(item.product.id)}
                 className="text-zinc-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors cursor-pointer"
               >
                 <Trash2 className="h-4 w-4" />
@@ -395,6 +406,39 @@ export const CartSidebar: React.FC = () => {
                 ) : (
                   <span>Reativar e Vender</span>
                 )}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+      {/* Remove Item Confirmation Modal */}
+      {itemToDelete && (
+        <Modal
+          isOpen={!!itemToDelete}
+          onClose={() => setItemToDelete(null)}
+          title="Remover do Carrinho"
+        >
+          <div className="space-y-6">
+            <p className="text-sm font-semibold text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              Deseja realmente remover o item <span className="text-zinc-900 dark:text-white font-extrabold">"{cart.find((it) => it.product.id === itemToDelete)?.product.name}"</span> do carrinho?
+            </p>
+            <div className="flex gap-3 justify-end mt-4">
+              <button
+                type="button"
+                onClick={() => setItemToDelete(null)}
+                className="flex-1 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-bold py-3 rounded-xl transition-all text-sm cursor-pointer"
+              >
+                Voltar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (itemToDelete) removeFromCart(itemToDelete);
+                  setItemToDelete(null);
+                }}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition-all text-sm shadow-md cursor-pointer"
+              >
+                Remover Item
               </button>
             </div>
           </div>

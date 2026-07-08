@@ -175,23 +175,23 @@ export const QuickUserModal: React.FC<QuickUserModalProps> = ({
             Revise as informações do participante antes de confirmar a gravação de dados.
           </p>
 
-          <div className="bg-zinc-50 dark:bg-zinc-850/50 border border-zinc-150 dark:border-zinc-800/80 rounded-2xl p-5 space-y-4 text-sm font-semibold">
-            <div className="flex justify-between">
-              <span className="text-zinc-450">Nome Completo:</span>
-              <span className="text-zinc-950 dark:text-white font-bold">{firstName} {lastName}</span>
+          <div className="bg-zinc-100/60 dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 space-y-4 text-sm font-semibold">
+            <div className="flex justify-between items-center">
+              <span className="text-zinc-500 dark:text-zinc-400">Nome Completo:</span>
+              <span className="text-zinc-900 dark:text-zinc-100 font-bold">{firstName} {lastName}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-zinc-450">CPF:</span>
+            <div className="flex justify-between items-center">
+              <span className="text-zinc-500 dark:text-zinc-400">CPF:</span>
               <span className="font-mono text-zinc-800 dark:text-zinc-200">{formatCpf(cpf)}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-zinc-450">Telefone:</span>
+            <div className="flex justify-between items-center">
+              <span className="text-zinc-500 dark:text-zinc-400">Telefone:</span>
               <span className="text-zinc-800 dark:text-zinc-200">{phone}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-zinc-450">E-mail:</span>
+            <div className="flex justify-between items-center">
+              <span className="text-zinc-500 dark:text-zinc-400">E-mail:</span>
               <span className="text-zinc-800 dark:text-zinc-200">
-                {email.trim() ? email : <span className="italic text-zinc-300 dark:text-zinc-700">Não informado</span>}
+                {email.trim() ? email : <span className="italic text-zinc-400 dark:text-zinc-600">Não informado</span>}
               </span>
             </div>
           </div>
