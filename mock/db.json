@@ -1,0 +1,314 @@
+{
+  "events": [
+    {
+      "id": "evt-1",
+      "name": "Homens de Fé - Versão 3",
+      "isActive": true,
+      "createdAt": "2026-07-07T12:00:00.000Z"
+    },
+    {
+      "id": "evt-2",
+      "name": "Retiro Mulheres de Fé - Versão 1",
+      "isActive": false,
+      "createdAt": "2026-07-07T12:00:00.000Z"
+    }
+  ],
+  "users": [
+    {
+      "id": "usr-1",
+      "cpf": "12345678901",
+      "email": "cliente@email.com",
+      "password": "mock",
+      "firstName": "Carlos",
+      "lastName": "Silva",
+      "phone": "53999999999",
+      "role": "USER"
+    },
+    {
+      "id": "usr-2",
+      "cpf": "98765432100",
+      "email": "admin@email.com",
+      "password": "mock",
+      "firstName": "Gabriel",
+      "lastName": "Admin",
+      "phone": "53988888888",
+      "role": "ADMIN"
+    },
+    {
+      "cpf": "01268836028",
+      "firstName": "Rodrigo",
+      "lastName": "Granada",
+      "phone": "53999429996",
+      "role": "USER",
+      "email": "rodrigo@mock.com",
+      "password": "mock",
+      "id": "kIMbZUx"
+    }
+  ],
+  "products": [
+    {
+      "id": "prod-1",
+      "name": "Camiseta Oficial Retiro",
+      "price": 60,
+      "stock": 49,
+      "imageUrl": ""
+    },
+    {
+      "id": "prod-2",
+      "name": "Bíblia de Estudos Nova",
+      "price": 120,
+      "stock": 15,
+      "imageUrl": "",
+      "active": true
+    },
+    {
+      "id": "prod-3",
+      "name": "Garrafa Térmica Homens de Fé",
+      "price": 45,
+      "stock": 4,
+      "imageUrl": ""
+    },
+    {
+      "id": "prod-4",
+      "name": "Boné Bordado",
+      "price": 35,
+      "stock": 25,
+      "imageUrl": "",
+      "active": false,
+      "category": "Vestuário",
+      "minStock": 5
+    },
+    {
+      "name": "Raquete",
+      "price": 545.99,
+      "stock": 24,
+      "imageUrl": "/uploads/1783445153718-me.jpeg",
+      "id": "BFT39il",
+      "category": "Outros",
+      "minStock": 5
+    }
+  ],
+  "sales": [
+    {
+      "id": "sale-1",
+      "customerId": "usr-1",
+      "eventId": "evt-1",
+      "items": [
+        {
+          "productId": "prod-1",
+          "quantity": 1,
+          "priceAtPurchase": 60
+        }
+      ],
+      "totalPrice": 60,
+      "status": "PENDENTE",
+      "createdAt": "2026-07-07T12:30:00.000Z"
+    },
+    {
+      "customerId": "kIMbZUx",
+      "eventId": "evt-1",
+      "items": [
+        {
+          "productId": "prod-1",
+          "quantity": 1,
+          "priceAtPurchase": 60
+        }
+      ],
+      "totalPrice": 60,
+      "status": "PAGO",
+      "createdAt": "2026-07-07T13:35:03.337Z",
+      "id": "S86Kz1o"
+    },
+    {
+      "customerId": "kIMbZUx",
+      "eventId": "evt-1",
+      "items": [
+        {
+          "productId": "BFT39il",
+          "quantity": 1,
+          "priceAtPurchase": 545.99
+        }
+      ],
+      "totalPrice": 545.99,
+      "status": "PAGO",
+      "createdAt": "2026-07-07T18:23:33.429Z",
+      "id": "pXTPY7v"
+    }
+  ],
+  "logs": [
+    {
+      "userId": "usr-2",
+      "userName": "Gabriel Admin",
+      "action": "product_update",
+      "description": "Gabriel Admin atualizou o produto \"Alice\": alterou estoque de 20 para 25",
+      "metadata": {
+        "productId": "BFT39il",
+        "old": {
+          "name": "Alice",
+          "price": 12000,
+          "stock": 20
+        },
+        "new": {
+          "name": "Alice",
+          "price": 12000,
+          "stock": 25
+        }
+      },
+      "createdAt": "2026-07-07T17:01:51.325Z",
+      "id": 1
+    },
+    {
+      "userId": "usr-2",
+      "userName": "Gabriel Admin",
+      "action": "product_update",
+      "description": "Gabriel Admin atualizou o produto \"Alice\": alterou preço de R$ 12000.00 para R$ 545.99",
+      "metadata": {
+        "productId": "BFT39il",
+        "old": {
+          "name": "Alice",
+          "price": 12000,
+          "stock": 25
+        },
+        "new": {
+          "name": "Alice",
+          "price": 545.99,
+          "stock": 25
+        }
+      },
+      "createdAt": "2026-07-07T17:25:07.586Z",
+      "id": 2
+    },
+    {
+      "userId": "usr-2",
+      "userName": "Gabriel Admin",
+      "action": "product_update",
+      "description": "Gabriel Admin atualizou o produto \"Alice\"",
+      "metadata": {
+        "productId": "BFT39il",
+        "old": {
+          "name": "Alice",
+          "price": 545.99,
+          "stock": 25
+        },
+        "new": {
+          "name": "Alice",
+          "price": 545.99,
+          "stock": 25
+        }
+      },
+      "createdAt": "2026-07-07T17:25:53.754Z",
+      "id": 3
+    },
+    {
+      "userId": "usr-2",
+      "userName": "Gabriel Admin",
+      "action": "product_update",
+      "description": "Gabriel Admin atualizou o produto \"Raquete\": alterou nome de \"Alice\" para \"Raquete\"",
+      "metadata": {
+        "productId": "BFT39il",
+        "old": {
+          "name": "Alice",
+          "price": 545.99,
+          "stock": 25
+        },
+        "new": {
+          "name": "Raquete",
+          "price": 545.99,
+          "stock": 25
+        }
+      },
+      "createdAt": "2026-07-07T17:29:37.767Z",
+      "id": 4
+    },
+    {
+      "userId": "usr-2",
+      "userName": "Gabriel Admin",
+      "action": "product_update",
+      "description": "Gabriel Admin atualizou o produto \"Raquete\": alterou estoque crítico de 5 para 5, categoria de \"Outros\" para \"Outros\"",
+      "metadata": {
+        "productId": "BFT39il",
+        "old": {
+          "name": "Raquete",
+          "price": 545.99,
+          "stock": 25
+        },
+        "new": {
+          "name": "Raquete",
+          "price": 545.99,
+          "stock": 25,
+          "minStock": 5,
+          "category": "Outros"
+        }
+      },
+      "createdAt": "2026-07-07T17:50:43.702Z",
+      "id": 5
+    },
+    {
+      "userId": "usr-2",
+      "userName": "Gabriel Admin",
+      "action": "product_update",
+      "description": "Gabriel Admin atualizou o produto \"Boné Bordado\": alterou estoque crítico de 5 para 5, categoria de \"Outros\" para \"Vestuário\"",
+      "metadata": {
+        "productId": "prod-4",
+        "old": {
+          "name": "Boné Bordado",
+          "price": 35,
+          "stock": 25
+        },
+        "new": {
+          "name": "Boné Bordado",
+          "price": 35,
+          "stock": 25,
+          "minStock": 5,
+          "category": "Vestuário"
+        }
+      },
+      "createdAt": "2026-07-07T17:51:29.470Z",
+      "id": 6
+    },
+    {
+      "userId": "usr-2",
+      "userName": "Gabriel Admin",
+      "action": "product_deactivate",
+      "description": "Gabriel Admin desativou o produto \"Boné Bordado\"",
+      "metadata": {
+        "productId": "prod-4"
+      },
+      "createdAt": "2026-07-07T18:16:36.511Z",
+      "id": 7
+    },
+    {
+      "userId": "usr-2",
+      "userName": "Gabriel Admin",
+      "action": "stock_update",
+      "description": "Gabriel Admin vendeu item e atualizou o estoque de \"Raquete\" para 24",
+      "metadata": {
+        "productId": "BFT39il",
+        "oldStock": 25,
+        "newStock": 24
+      },
+      "createdAt": "2026-07-07T18:23:33.418Z",
+      "id": 8
+    },
+    {
+      "userId": "usr-2",
+      "userName": "Gabriel Admin",
+      "action": "sale_create",
+      "description": "Gabriel Admin vendeu os itens [ 1x Raquete ] no valor total de R$ 545.99 para o cliente Rodrigo (CPF: 01268836028)",
+      "metadata": {
+        "customerId": "kIMbZUx",
+        "customerName": "Rodrigo Granada",
+        "totalPrice": 545.99,
+        "items": [
+          {
+            "productId": "BFT39il",
+            "quantity": 1,
+            "priceAtPurchase": 545.99
+          }
+        ]
+      },
+      "createdAt": "2026-07-07T18:23:33.440Z",
+      "id": 9
+    }
+  ]
+}

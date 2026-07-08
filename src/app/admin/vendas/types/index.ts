@@ -1,0 +1,33 @@
+import { Sale, Event } from "@/hooks/useApi";
+
+export interface SalesContextProps {
+  sales: Sale[];
+  loading: boolean;
+  error: string;
+  success: string;
+  searchTerm: string;
+  setSearchTerm: (search: string) => void;
+  statusFilter: string;
+  setStatusFilter: (filter: string) => void;
+  expandedSaleId: string | null;
+  setExpandedSaleId: (id: string | null) => void;
+  saleToCancel: Sale | null;
+  setSaleToCancel: (sale: Sale | null) => void;
+  isCancelModalOpen: boolean;
+  setIsCancelModalOpen: (open: boolean) => void;
+  canceling: boolean;
+  saleToPay: Sale | null;
+  setSaleToPay: (sale: Sale | null) => void;
+  isPayModalOpen: boolean;
+  setIsPayModalOpen: (open: boolean) => void;
+  paying: boolean;
+  loadSales: () => Promise<void>;
+  handleCancelSale: () => Promise<void>;
+  handlePaySale: () => Promise<void>;
+  toggleExpand: (saleId: string) => void;
+  formatCurrency: (val: number) => string;
+  filteredSales: Sale[];
+  events: Event[];
+  selectedEventId: string;
+  setSelectedEventId: (id: string) => void;
+}
