@@ -6,48 +6,56 @@ import Link from "next/link";
 import { LogIn, BookOpen, Settings } from "lucide-react";
 
 interface PsalmData {
-  text: string;
-  reference: string;
+  refrao?: string;
+  texto: string;
+  referencia: string;
 }
 
 export default function HomePage() {
   const { currentUser, activeEvent, isLoading } = useApp();
 
-  // Psalm of the Day states
+  // Psalm of the Day states (from Daily Liturgy API)
   const [psalm, setPsalm] = useState<PsalmData | null>(null);
   const [loadingPsalm, setLoadingPsalm] = useState(true);
 
-  // Fetch Psalm of the Day from the API based on today's date
   useEffect(() => {
     async function fetchPsalm() {
       const today = new Date();
       const day = today.getDate();
       const month = today.getMonth() + 1;
       const year = today.getFullYear();
-      
-      // Deterministic chapter based on current date so it stays the same all day
-      const seed = day + month * 31 + year;
-      const chapter = (seed % 150) + 1;
 
       setLoadingPsalm(true);
       try {
-        const res = await fetch(`https://www.abibliadigital.com.br/api/verses/nvi/sl/${chapter}/1`);
+        const res = await fetch(`https://liturgia.up.railway.app/v3/?dia=${day}&mes=${month}&ano=${year}`);
         if (!res.ok) throw new Error("API error");
         const data = await res.json();
+        
+        // Find the main celebration of the day
+        const celebration = data.celebracoes?.find((c: any) => c.principal) || data.celebracoes?.[0];
+        if (!celebration) throw new Error("No celebration found");
+
+        // Find the Psalm responsorial in the readings
+        const salmoLeitura = celebration.leituras?.find(
+          (l: any) => l.tipo === "salmo" || l.rotulo?.toLowerCase().includes("salmo")
+        );
+        if (!salmoLeitura) throw new Error("No Psalm reading found");
+
+        const salmoOpcao = salmoLeitura.opcoes?.[0];
+        if (!salmoOpcao) throw new Error("No Psalm option found");
+
         setPsalm({
-          text: data.text,
-          reference: `Salmos ${data.chapter}:${data.number}`
+          refrao: salmoOpcao.refrao || "",
+          texto: salmoOpcao.texto || "",
+          referencia: salmoOpcao.referencia || "Salmo Responsorial"
         });
       } catch (err) {
-        console.warn("Failed to fetch psalm from API, using fallback", err);
-        // Fallback that is also deterministic based on the chapter index
-        const fallbacks: Record<number, PsalmData> = {
-          1: { text: "O Senhor é o meu pastor, nada me faltará.", reference: "Salmos 23:1" },
-          2: { text: "Deus é o nosso refúgio e a nossa fortaleza, auxílio sempre presente na adversidade.", reference: "Salmos 46:1" },
-          3: { text: "Entrega o teu caminho ao Senhor; confia nele, e ele agirá.", reference: "Salmos 37:5" },
-        };
-        const fallbackIndex = (chapter % 3) + 1;
-        setPsalm(fallbacks[fallbackIndex]);
+        console.warn("Failed to fetch liturgical psalm, using Psalm 23 fallback", err);
+        setPsalm({
+          refrao: "O Senhor é o meu pastor, nada me faltará.",
+          texto: "— O Senhor é o meu pastor, nada me faltará. Deita-me em verdes pastagens e guia-me mansamente a águas tranquilas.\n— Restaura a minha alma e guia-me pelas veredas da justiça por amor do seu nome.",
+          referencia: "Salmos 23:1-3"
+        });
       } finally {
         setLoadingPsalm(false);
       }
@@ -117,10 +125,10 @@ export default function HomePage() {
         <div className="space-y-2 relative z-10">
           <span className="bg-indigo-50 dark:bg-indigo-955/40 text-indigo-600 dark:text-indigo-400 text-[10px] font-extrabold uppercase tracking-widest px-3 py-1 rounded-full border border-indigo-100 dark:border-indigo-900/30 flex items-center gap-1.5 justify-center w-fit mx-auto">
             <BookOpen className="h-3.5 w-3.5" />
-            Palavra do Dia
+            Liturgia Diária
           </span>
           <h2 className="text-2xl font-black text-zinc-950 dark:text-white mt-2">
-            Salmo do Dia
+            Salmo Responsorial
           </h2>
         </div>
 
@@ -130,15 +138,28 @@ export default function HomePage() {
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>
-            <span className="text-xs text-zinc-400 font-semibold">Buscando palavra na Bíblia Sagrada...</span>
+            <span className="text-xs text-zinc-400 font-semibold">Buscando Salmo do dia na Liturgia Diária...</span>
           </div>
         ) : psalm ? (
-          <div className="space-y-4 max-w-2xl relative z-10 py-2">
-            <p className="text-lg md:text-xl font-medium text-zinc-700 dark:text-zinc-300 italic leading-relaxed font-serif">
-              &ldquo;{psalm.text}&rdquo;
+          <div className="space-y-5 max-w-3xl relative z-10 py-2">
+            {/* Refrain */}
+            {psalm.refrao && (
+              <div className="bg-zinc-50 dark:bg-zinc-800/40 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800 inline-block max-w-xl mx-auto">
+                <p className="text-xs font-black uppercase text-indigo-600 dark:text-indigo-400 tracking-wider">Refrão</p>
+                <p className="text-base font-extrabold text-zinc-800 dark:text-zinc-200 mt-1 italic font-serif">
+                  &ldquo;{psalm.refrao}&rdquo;
+                </p>
+              </div>
+            )}
+            
+            {/* Verses */}
+            <p className="text-base md:text-lg font-medium text-zinc-700 dark:text-zinc-355 leading-relaxed font-serif whitespace-pre-line text-center max-w-2xl mx-auto">
+              {psalm.texto}
             </p>
-            <p className="text-sm font-bold text-zinc-500 dark:text-zinc-500 font-mono">
-              — {psalm.reference}
+            
+            {/* Reference */}
+            <p className="text-xs font-bold text-zinc-500 dark:text-zinc-550 font-mono tracking-wide">
+              — {psalm.referencia}
             </p>
           </div>
         ) : null}
