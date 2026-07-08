@@ -18,6 +18,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Lojinha Virtual - Retiros Religiosos",
   description: "Sistema simplificado de PDV e E-commerce para retiros.",
+  icons: {
+    icon: "/iconeLoja.png",
+    shortcut: "/iconeLoja.png",
+  },
 };
 
 export default function RootLayout({
