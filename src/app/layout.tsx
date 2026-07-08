@@ -19,8 +19,8 @@ export const metadata: Metadata = {
   title: "Lojinha Virtual - Retiros Religiosos",
   description: "Sistema simplificado de PDV e E-commerce para retiros.",
   icons: {
-    icon: "/icone.png",
-    shortcut: "/icone.png",
+    icon: "/favicon-square.png",
+    shortcut: "/favicon-square.png",
   },
 };
 

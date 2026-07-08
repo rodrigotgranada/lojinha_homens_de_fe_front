@@ -90,7 +90,7 @@ export const Navigation: React.FC = () => {
                 href="/"
                 className="flex items-center gap-2 font-black text-base tracking-tight text-indigo-600 dark:text-indigo-400 shrink-0"
               >
-                <img src="/icone.png" alt="Logo" className="h-9 w-auto max-w-[45px] object-contain" />
+                <img src="/icone.png" alt="Logo" className="h-10 w-auto max-w-[90px] object-contain" />
                 <span className="hidden sm:block">Lojinha Retiro</span>
               </Link>
 
@@ -237,7 +237,7 @@ export const Navigation: React.FC = () => {
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center gap-2 font-black text-base text-indigo-600 dark:text-indigo-400"
               >
-                <img src="/icone.png" alt="Logo" className="h-8 w-auto max-w-[36px] object-contain" /> Lojinha Retiro
+                <img src="/icone.png" alt="Logo" className="h-8.5 w-auto max-w-[75px] object-contain" /> Lojinha Retiro
               </Link>
               <button
                 onClick={() => setMobileOpen(false)}
