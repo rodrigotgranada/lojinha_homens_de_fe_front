@@ -28,6 +28,19 @@ export const useSalesState = () => {
   const [isPayModalOpen, setIsPayModalOpen] = useState(false);
   const [paying, setPaying] = useState(false);
 
+  // Print & Export state
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [printType, setPrintType] = useState<"event-summary" | "customer-extrato" | null>(null);
+  const [printCpf, setPrintCpf] = useState("");
+  const [printFilterByEvent, setPrintFilterByEvent] = useState(true);
+
+  const triggerPrint = (type: "event-summary" | "customer-extrato") => {
+    setPrintType(type);
+    setTimeout(() => {
+      window.print();
+    }, 150);
+  };
+
   // Fetch sales
   const loadSales = useCallback(async () => {
     try {
@@ -202,6 +215,15 @@ export const useSalesState = () => {
     isPayModalOpen,
     setIsPayModalOpen,
     paying,
+    isExportModalOpen,
+    setIsExportModalOpen,
+    printType,
+    setPrintType,
+    printCpf,
+    setPrintCpf,
+    printFilterByEvent,
+    setPrintFilterByEvent,
+    triggerPrint,
     loadSales,
     handleCancelSale,
     handlePaySale,

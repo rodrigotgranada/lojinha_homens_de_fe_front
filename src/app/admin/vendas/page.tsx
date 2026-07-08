@@ -7,6 +7,8 @@ import { SalesHeader } from "./components/SalesHeader";
 import { SalesFilter } from "./components/SalesFilter";
 import { SalesTable } from "./components/SalesTable";
 import { SalesModals } from "./components/SalesModals";
+import { ExportReportModal } from "./components/ExportReportModal";
+import { SalesPrintArea } from "./components/SalesPrintArea";
 import { ShieldAlert, CheckCircle, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
@@ -42,7 +44,7 @@ export default function SalesAuditPage() {
             <ShieldAlert className="h-8 w-8" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-2xl font-black text-zinc-950 dark:text-white">Acesso Restrito</h2>
+            <h2 className="text-2xl font-black text-zinc-955 dark:text-white">Acesso Restrito</h2>
             <p className="text-zinc-500 dark:text-zinc-400 text-sm">
               Esta área de auditoria e cancelamentos é reservada exclusivamente para administradores.
             </p>
@@ -60,33 +62,44 @@ export default function SalesAuditPage() {
 
   return (
     <SalesProvider value={salesState}>
-      <div className="flex-1 flex flex-col gap-6 py-6 max-w-7xl mx-auto w-full px-4">
-        {/* Header Section */}
-        <SalesHeader />
+      <div className="flex-1 flex flex-col gap-6 py-6 max-w-7xl mx-auto w-full px-4 print:p-0">
+        
+        {/* Interactive Layout: Hidden when printing */}
+        <div className="print:hidden flex flex-col gap-6 w-full">
+          {/* Header Section */}
+          <SalesHeader />
 
-        {/* Action Messages */}
-        {success && (
-          <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3.5 rounded-2xl flex items-center gap-2 text-sm shadow-xs animate-fade-in">
-            <CheckCircle className="h-5 w-5 shrink-0" />
-            <span>{success}</span>
-          </div>
-        )}
+          {/* Action Messages */}
+          {success && (
+            <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3.5 rounded-2xl flex items-center gap-2 text-sm shadow-xs animate-fade-in">
+              <CheckCircle className="h-5 w-5 shrink-0" />
+              <span>{success}</span>
+            </div>
+          )}
 
-        {error && (
-          <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3.5 rounded-2xl flex items-center gap-2 text-sm shadow-xs animate-fade-in">
-            <AlertCircle className="h-5 w-5 shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
+          {error && (
+            <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3.5 rounded-2xl flex items-center gap-2 text-sm shadow-xs animate-fade-in">
+              <AlertCircle className="h-5 w-5 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
 
-        {/* Filter and Search Section */}
-        <SalesFilter />
+          {/* Filter and Search Section */}
+          <SalesFilter />
 
-        {/* Audits Table */}
-        <SalesTable />
+          {/* Audits Table */}
+          <SalesTable />
 
-        {/* Confirmation Modals (Cancel and Pay) */}
-        <SalesModals />
+          {/* Confirmation Modals (Cancel and Pay) */}
+          <SalesModals />
+
+          {/* PDF Report and Statement Modal Dialog */}
+          <ExportReportModal />
+        </div>
+
+        {/* Print-Only Layout: Visible only when printing */}
+        <SalesPrintArea />
+        
       </div>
     </SalesProvider>
   );

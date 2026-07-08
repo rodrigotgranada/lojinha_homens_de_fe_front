@@ -30,4 +30,13 @@ export interface SalesContextProps {
   events: Event[];
   selectedEventId: string;
   setSelectedEventId: (id: string) => void;
+  isExportModalOpen: boolean;
+  setIsExportModalOpen: (open: boolean) => void;
+  printType: "event-summary" | "customer-extrato" | null;
+  setPrintType: (type: "event-summary" | "customer-extrato" | null) => void;
+  printCpf: string;
+  setPrintCpf: (cpf: string) => void;
+  printFilterByEvent: boolean;
+  setPrintFilterByEvent: (filter: boolean) => void;
+  triggerPrint: (type: "event-summary" | "customer-extrato") => void;
 }
