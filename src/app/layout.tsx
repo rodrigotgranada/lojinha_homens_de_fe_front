@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Lojinha Virtual - Retiros Religiosos",
-  description: "Sistema simplificado de PDV e E-commerce para retiros.",
+  title: "Lojinha Virtual - Homens de Fé",
+  description: "Sistema simplificado de PDV e E-commerce para Homens de Fé.",
   icons: {
     icon: "/ChromeIcon.png",
     shortcut: "/ChromeIcon.png",
