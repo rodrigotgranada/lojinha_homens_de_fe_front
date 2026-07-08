@@ -19,7 +19,7 @@ export default function PdvPage() {
     setActiveTab
   } = pdvState;
 
-  // Custom Full Screen Layout for PDV: Hide footer & negate padding top/bottom
+  // Custom Full Screen Layout for PDV: Hide footer & negate padding top/bottom/left/right
   useEffect(() => {
     const footer = document.querySelector("footer");
     const main = document.querySelector("main");
@@ -28,6 +28,10 @@ export default function PdvPage() {
     if (main) {
       main.style.paddingTop = "0px";
       main.style.paddingBottom = "0px";
+      main.style.paddingLeft = "0px";
+      main.style.paddingRight = "0px";
+      main.style.maxWidth = "100%";
+      main.style.width = "100%";
       main.style.height = "calc(100vh - 64px)";
       main.style.maxHeight = "calc(100vh - 64px)";
     }
@@ -37,6 +41,10 @@ export default function PdvPage() {
       if (main) {
         main.style.paddingTop = "";
         main.style.paddingBottom = "";
+        main.style.paddingLeft = "";
+        main.style.paddingRight = "";
+        main.style.maxWidth = "";
+        main.style.width = "";
         main.style.height = "";
         main.style.maxHeight = "";
       }
@@ -79,49 +87,50 @@ export default function PdvPage() {
 
   return (
     <PdvProvider value={pdvState}>
-      <div className="flex-1 flex flex-col gap-6 py-4 h-full min-h-0">
-        {/* PDV Header */}
-        <PdvHeader />
-
+      <div className="flex-1 flex flex-col h-full min-h-0 bg-zinc-50 dark:bg-zinc-950">
+        
         {/* Tabs for mobile devices */}
-        <div className="flex md:hidden border-b border-zinc-150 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-1.5 rounded-xl shadow-xs">
-          <button
-            onClick={() => setActiveTab("catalog")}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold transition-all cursor-pointer ${
-              activeTab === "catalog"
-                ? "bg-indigo-600 text-white shadow-xs"
-                : "text-zinc-550 hover:bg-zinc-50 dark:hover:bg-zinc-800"
-            }`}
-          >
-            <ShoppingBag className="h-4 w-4" />
-            Catálogo
-          </button>
-          <button
-            onClick={() => setActiveTab("cart")}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold relative transition-all cursor-pointer ${
-              activeTab === "cart"
-                ? "bg-indigo-600 text-white shadow-xs"
-                : "text-zinc-550 hover:bg-zinc-50 dark:hover:bg-zinc-800"
-            }`}
-          >
-            <ShoppingCart className="h-4 w-4" />
-            Carrinho
-            {cartCount > 0 && (
-              <span className="absolute top-1.5 right-6 bg-red-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-white dark:border-zinc-900">
-                {cartCount}
-              </span>
-            )}
-          </button>
+        <div className="md:hidden px-4 pt-4 bg-zinc-50 dark:bg-zinc-950 shrink-0">
+          <div className="flex border-b border-zinc-150 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-1.5 rounded-xl shadow-xs">
+            <button
+              onClick={() => setActiveTab("catalog")}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold transition-all cursor-pointer ${
+                activeTab === "catalog"
+                  ? "bg-indigo-600 text-white shadow-xs"
+                  : "text-zinc-550 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+              }`}
+            >
+              <ShoppingBag className="h-4 w-4" />
+              Catálogo
+            </button>
+            <button
+              onClick={() => setActiveTab("cart")}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold relative transition-all cursor-pointer ${
+                activeTab === "cart"
+                  ? "bg-indigo-600 text-white shadow-xs"
+                  : "text-zinc-550 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+              }`}
+            >
+              <ShoppingCart className="h-4 w-4" />
+              Carrinho
+              {cartCount > 0 && (
+                <span className="absolute top-1.5 right-6 bg-red-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-white dark:border-zinc-900">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Main Split Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1 min-h-0">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-0 flex-1 min-h-0">
           {/* Left Side: Catalog Search & Grid */}
           <div
             className={`${
               activeTab === "catalog" ? "flex" : "hidden"
-            } md:flex md:col-span-2 flex-col gap-5 h-full min-h-0`}
+            } md:flex md:col-span-2 flex-col gap-5 p-6 md:p-8 h-full min-h-0 bg-zinc-50 dark:bg-zinc-950/20`}
           >
+            <PdvHeader />
             <PdvCatalog />
           </div>
 

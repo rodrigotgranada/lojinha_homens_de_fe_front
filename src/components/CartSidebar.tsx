@@ -197,7 +197,7 @@ export const CartSidebar: React.FC = () => {
   };
 
   return (
-    <div className="bg-white dark:bg-zinc-900 border border-zinc-150 dark:border-zinc-800 rounded-2xl p-6 shadow-xs flex flex-col h-full">
+    <div className="bg-white dark:bg-zinc-900 border-l border-zinc-150 dark:border-zinc-800 p-6 flex flex-col h-full">
       <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-4 mb-4">
         <h3 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
           <ShoppingBag className="h-5 w-5 text-indigo-650 dark:text-indigo-400" />
