@@ -45,12 +45,46 @@ export const QuickUserModal: React.FC<QuickUserModalProps> = ({
     }
   }, [isOpen]);
 
+  const formatPhoneString = (val: string) => {
+    const rawVal = val.replace(/\D/g, "").slice(0, 11);
+    if (rawVal.length === 0) return "";
+    if (rawVal.length <= 2) {
+      return `(${rawVal}`;
+    }
+    if (rawVal.length <= 6) {
+      return `(${rawVal.slice(0, 2)}) ${rawVal.slice(2)}`;
+    }
+    if (rawVal.length <= 10) {
+      return `(${rawVal.slice(0, 2)}) ${rawVal.slice(2, 6)}-${rawVal.slice(6)}`;
+    }
+    return `(${rawVal.slice(0, 2)}) ${rawVal.slice(2, 7)}-${rawVal.slice(7)}`;
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPhone(formatPhoneString(e.target.value));
+  };
+
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!firstName.trim() || !lastName.trim() || !phone.trim()) {
       setError("Por favor, preencha todos os campos obrigatórios.");
       return;
     }
+
+    const cleanPhone = phone.replace(/\D/g, "");
+    if (cleanPhone.length < 10 || cleanPhone.length > 11) {
+      setError("Por favor, digite um telefone com DDD válido (10 ou 11 dígitos).");
+      return;
+    }
+
+    if (email.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.trim())) {
+        setError("Por favor, digite um e-mail válido.");
+        return;
+      }
+    }
+
     setError("");
     setStep("confirm");
   };
@@ -143,9 +177,9 @@ export const QuickUserModal: React.FC<QuickUserModalProps> = ({
           <Input
             label="Telefone / WhatsApp"
             id="quick-phone"
-            placeholder="Ex: 53999999999"
+            placeholder="(53) 99999-9999"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={handlePhoneChange}
             required
             icon={<Phone className="h-5 w-5" />}
           />
