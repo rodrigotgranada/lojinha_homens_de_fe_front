@@ -105,14 +105,14 @@ export const LiturgySection: React.FC<LiturgySectionProps> = ({ celebration, loa
             <div className="bg-zinc-50 dark:bg-zinc-800/40 p-4 rounded-xl border border-zinc-100 dark:border-zinc-800/80 inline-block w-full">
               <p className="text-[10px] font-black uppercase text-indigo-600 dark:text-indigo-400 tracking-wider">Refrão Responsorial</p>
               <p className="text-base font-extrabold text-zinc-850 dark:text-zinc-200 mt-1 italic font-serif">
-                &ldquo;{option.refrao}&rdquo;
+                &ldquo;{option.refrao.replace(/(\d+)([a-zA-ZÀ-ÿ“"'\u00C0-\u00FF])/g, "$1 $2")}&rdquo;
               </p>
             </div>
           )}
 
           {/* Reading text body */}
           <div className="text-base md:text-lg font-medium text-zinc-750 dark:text-zinc-300 leading-relaxed font-serif whitespace-pre-line antialiased">
-            {option.texto}
+            {option.texto.replace(/(\d+)([a-zA-ZÀ-ÿ“"'\u00C0-\u00FF])/g, "$1 $2")}
           </div>
         </div>
       ) : (
