@@ -22,7 +22,8 @@ import {
   Sun,
   Moon,
   Monitor,
-  Tag
+  Tag,
+  Settings
 } from "lucide-react";
 
 const adminLinks = [
@@ -34,6 +35,7 @@ const adminLinks = [
   { name: "Vendas", href: "/admin/vendas", icon: <FileText className="h-4 w-4" /> },
   { name: "Clientes", href: "/admin/clientes", icon: <User className="h-4 w-4" /> },
   { name: "Logs", href: "/admin/logs", icon: <Activity className="h-4 w-4" /> },
+  { name: "Configurações", href: "/admin/configuracoes", icon: <Settings className="h-4 w-4" /> },
 ];
 
 export const Navigation: React.FC = () => {

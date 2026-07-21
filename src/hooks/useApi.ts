@@ -105,14 +105,24 @@ export interface LogEntry {
   createdAt: string;
 }
 
-const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "true";
-const API_BASE = USE_MOCK
-  ? (process.env.NEXT_PUBLIC_MOCK_URL || "http://localhost:5006")
-  : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001");
+function getApiBase(): string {
+  if (typeof window !== "undefined") {
+    const useLocalApi = window.localStorage.getItem("use_local_api") === "true";
+    const localApiUrl = window.localStorage.getItem("local_api_url");
+    if (useLocalApi && localApiUrl) {
+      return localApiUrl;
+    }
+  }
+  const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "true";
+  return USE_MOCK
+    ? (process.env.NEXT_PUBLIC_MOCK_URL || "http://localhost:5006")
+    : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001");
+}
 
 // Helper for making API calls with fallback check
 async function apiFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const url = `${API_BASE}${endpoint}`;
+  const apiBase = getApiBase();
+  const url = `${apiBase}${endpoint}`;
   try {
     const res = await fetch(url, {
       ...options,

@@ -13,7 +13,7 @@ export const liturgyService = {
       const mainCelebration = data.celebracoes?.find((c) => c.principal) || data.celebracoes?.[0];
       return mainCelebration || null;
     } catch (error) {
-      console.error("Failed to fetch liturgy:", error);
+      console.warn("Failed to fetch liturgy (using fallback):", error instanceof Error ? error.message : error);
       return null;
     }
   }

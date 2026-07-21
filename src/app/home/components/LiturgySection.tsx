@@ -52,7 +52,7 @@ export const LiturgySection: React.FC<LiturgySectionProps> = ({ celebration, loa
         <div>
           <span className="bg-indigo-50 dark:bg-indigo-950/40 text-indigo-650 dark:text-indigo-455 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border border-indigo-100 dark:border-indigo-900/30 flex items-center gap-1.5 w-fit">
             <BookMarked className="h-3.5 w-3.5" />
-            Liturgia da Santa Missa
+            Liturgia Diária — {new Date().toLocaleDateString("pt-BR")}
           </span>
           <h2 className="text-xl font-black text-zinc-950 dark:text-white mt-2 leading-tight">
             {celebration.liturgia}
