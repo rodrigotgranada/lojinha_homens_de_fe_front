@@ -281,8 +281,8 @@ export const Navigation: React.FC = () => {
                       onClick={() => handleThemeChange("light")}
                       className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                         theme === "light"
-                          ? "bg-indigo-50 dark:bg-indigo-955/20 text-indigo-650 dark:text-indigo-400"
-                          : "text-zinc-700 dark:text-zinc-350 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                          ? "bg-indigo-50 dark:bg-indigo-950/20 text-indigo-650 dark:text-indigo-400"
+                          : "text-zinc-700 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
                       }`}
                     >
                       <Sun className="h-3.5 w-3.5" />
@@ -292,8 +292,8 @@ export const Navigation: React.FC = () => {
                       onClick={() => handleThemeChange("dark")}
                       className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                         theme === "dark"
-                          ? "bg-indigo-50 dark:bg-indigo-955/20 text-indigo-650 dark:text-indigo-400"
-                          : "text-zinc-700 dark:text-zinc-350 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                          ? "bg-indigo-50 dark:bg-indigo-950/20 text-indigo-650 dark:text-indigo-400"
+                          : "text-zinc-700 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
                       }`}
                     >
                       <Moon className="h-3.5 w-3.5" />
@@ -303,8 +303,8 @@ export const Navigation: React.FC = () => {
                       onClick={() => handleThemeChange("system")}
                       className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                         theme === "system"
-                          ? "bg-indigo-50 dark:bg-indigo-955/20 text-indigo-650 dark:text-indigo-400"
-                          : "text-zinc-700 dark:text-zinc-350 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                          ? "bg-indigo-50 dark:bg-indigo-950/20 text-indigo-650 dark:text-indigo-400"
+                          : "text-zinc-700 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
                       }`}
                     >
                       <Monitor className="h-3.5 w-3.5" />
@@ -470,7 +470,7 @@ export const Navigation: React.FC = () => {
                 }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all cursor-pointer ${
                   useLocalApi
-                    ? "bg-amber-50 border-amber-200 text-amber-600 dark:bg-amber-955/20 dark:border-amber-900/30 dark:text-amber-455"
+                    ? "bg-amber-50 border-amber-200 text-amber-600 dark:bg-amber-950/20 dark:border-amber-900/30 dark:text-amber-455"
                     : "bg-white border-zinc-200 text-zinc-650 dark:bg-zinc-850 dark:border-zinc-800 dark:text-zinc-300"
                 }`}
               >
@@ -539,7 +539,7 @@ export const Navigation: React.FC = () => {
           <div className="bg-white dark:bg-zinc-900 border border-zinc-150 dark:border-zinc-800 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-6 animate-in fade-in zoom-in-95 duration-150 text-left">
             <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
               <h3 className="font-extrabold text-lg text-zinc-900 dark:text-white flex items-center gap-2">
-                <Settings className="h-5 w-5 text-indigo-650 dark:text-indigo-400" />
+                <Settings className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                 Configurar Servidor Local
               </h3>
               <button
@@ -569,7 +569,7 @@ export const Navigation: React.FC = () => {
                     className="sr-only peer"
                     id="global-redirect-switch"
                   />
-                  <div className="w-9 h-5 bg-zinc-200 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-650"></div>
+                  <div className="w-9 h-5 bg-zinc-200 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
                 </label>
               </div>
 
@@ -638,7 +638,7 @@ export const Navigation: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleSaveConfig}
-                  className="px-4 py-2.5 bg-indigo-650 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-md transition-all cursor-pointer"
+                  className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-md transition-all cursor-pointer"
                 >
                   Salvar e Aplicar
                 </button>

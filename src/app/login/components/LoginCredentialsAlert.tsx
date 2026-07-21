@@ -5,11 +5,32 @@ export const LoginCredentialsAlert = () => {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const handleCopy = (text: string, key: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedKey(key);
-    setTimeout(() => {
-      setCopiedKey(null);
-    }, 1500);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text);
+      setCopiedKey(key);
+      setTimeout(() => {
+        setCopiedKey(null);
+      }, 1500);
+    } else {
+      // Fallback for non-secure HTTP contexts (e.g. tablet accessing local IP over HTTP)
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.opacity = "0";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        document.execCommand("copy");
+        setCopiedKey(key);
+        setTimeout(() => {
+          setCopiedKey(null);
+        }, 1500);
+      } catch (err) {
+        console.error("Failed to copy using fallback:", err);
+      }
+      document.body.removeChild(textArea);
+    }
   };
 
   const renderCopyButton = (text: string, key: string, label: string) => {
