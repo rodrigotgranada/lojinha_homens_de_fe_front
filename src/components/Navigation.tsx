@@ -58,6 +58,7 @@ export const Navigation: React.FC = () => {
   const [useLocalApi, setUseLocalApi] = useState(false);
   const [localApiUrl, setLocalApiUrl] = useState("http://localhost:3001");
   const [testStatus, setTestStatus] = useState<"idle" | "testing" | "success" | "error">("idle");
+  const [syncStatus, setSyncStatus] = useState<"idle" | "syncing" | "success" | "error">("idle");
 
   const navDropRef = useRef<HTMLDivElement>(null);
   const userDropRef = useRef<HTMLDivElement>(null);
@@ -119,6 +120,25 @@ export const Navigation: React.FC = () => {
       }
     } catch {
       setTestStatus("error");
+    }
+  };
+
+  const handleTriggerSync = async () => {
+    setSyncStatus("syncing");
+    try {
+      const res = await fetch(`${localApiUrl.trim()}/sync/trigger`, {
+        method: "POST",
+      });
+      if (res.ok) {
+        setSyncStatus("success");
+        setTimeout(() => setSyncStatus("idle"), 3000);
+      } else {
+        setSyncStatus("error");
+        setTimeout(() => setSyncStatus("idle"), 3000);
+      }
+    } catch {
+      setSyncStatus("error");
+      setTimeout(() => setSyncStatus("idle"), 3000);
     }
   };
 
@@ -610,24 +630,60 @@ export const Navigation: React.FC = () => {
                   )}
                 </div>
               )}
+
+              {/* Sync Status Result */}
+              {useLocalApi && syncStatus !== "idle" && (
+                <div className="text-xs font-bold transition-all animate-in fade-in duration-200 mt-2">
+                  {syncStatus === "syncing" && (
+                    <span className="text-zinc-500 flex items-center gap-1.5">
+                      <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                      Sincronizando banco de dados local com a nuvem...
+                    </span>
+                  )}
+                  {syncStatus === "success" && (
+                    <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                      <Wifi className="h-3.5 w-3.5" />
+                      Banco de dados sincronizado com sucesso!
+                    </span>
+                  )}
+                  {syncStatus === "error" && (
+                    <span className="text-red-600 dark:text-red-400 flex items-center gap-1.5">
+                      <WifiOff className="h-3.5 w-3.5" />
+                      Falha ao sincronizar. Verifique a internet do notebook.
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Modal Footer Actions */}
-            <div className="flex items-center justify-between gap-3 border-t border-zinc-100 dark:border-zinc-800 pt-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-zinc-100 dark:border-zinc-800 pt-4">
               {useLocalApi ? (
-                <button
-                  type="button"
-                  onClick={handleTestConfigConnection}
-                  disabled={testStatus === "testing"}
-                  className="px-4 py-2.5 bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-zinc-650 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 font-semibold text-xs rounded-xl transition-all cursor-pointer disabled:opacity-50"
-                >
-                  Testar Conexão
-                </button>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={handleTestConfigConnection}
+                    disabled={testStatus === "testing"}
+                    className="px-3 py-2 bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-zinc-650 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 font-semibold text-xs rounded-xl transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    Testar Conexão
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleTriggerSync}
+                    disabled={syncStatus === "syncing"}
+                    className="px-3 py-2 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/20 text-amber-600 dark:text-amber-455 border border-amber-100 dark:border-amber-900/30 font-semibold text-xs rounded-xl transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    title="Forçar sincronização completa do banco local com a nuvem"
+                  >
+                    <RefreshCw className={`h-3 w-3 ${syncStatus === "syncing" ? "animate-spin" : ""}`} />
+                    {syncStatus === "syncing" ? "Sincronizando..." : "Sincronizar Banco"}
+                  </button>
+                </div>
               ) : (
                 <div />
               )}
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                 <button
                   type="button"
                   onClick={() => setShowConfigModal(false)}
