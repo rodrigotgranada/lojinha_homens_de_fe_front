@@ -23,7 +23,10 @@ import {
   Moon,
   Monitor,
   Tag,
-  Settings
+  Settings,
+  RefreshCw,
+  Wifi,
+  WifiOff
 } from "lucide-react";
 
 const adminLinks = [
@@ -49,6 +52,12 @@ export const Navigation: React.FC = () => {
   const [themeDropOpen, setThemeDropOpen] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark" | "system">("system");
   const [mounted, setMounted] = useState(false);
+
+  // Network contingency configurations
+  const [showConfigModal, setShowConfigModal] = useState(false);
+  const [useLocalApi, setUseLocalApi] = useState(false);
+  const [localApiUrl, setLocalApiUrl] = useState("http://localhost:3001");
+  const [testStatus, setTestStatus] = useState<"idle" | "testing" | "success" | "error">("idle");
 
   const navDropRef = useRef<HTMLDivElement>(null);
   const userDropRef = useRef<HTMLDivElement>(null);
@@ -76,7 +85,42 @@ export const Navigation: React.FC = () => {
     } else {
       applyTheme("system");
     }
+    if (typeof window !== "undefined") {
+      setUseLocalApi(localStorage.getItem("use_local_api") === "true");
+      setLocalApiUrl(localStorage.getItem("local_api_url") || "http://localhost:3001");
+    }
   }, []);
+
+  const handleSaveConfig = () => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("use_local_api", String(useLocalApi));
+      localStorage.setItem("local_api_url", localApiUrl.trim());
+      setShowConfigModal(false);
+      window.location.reload();
+    }
+  };
+
+  const handleTestConfigConnection = async () => {
+    setTestStatus("testing");
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+      const res = await fetch(`${localApiUrl.trim()}/sync/health`, {
+        method: "GET",
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        setTestStatus("success");
+      } else {
+        setTestStatus("error");
+      }
+    } catch {
+      setTestStatus("error");
+    }
+  };
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -200,6 +244,25 @@ export const Navigation: React.FC = () => {
             {/* Right: User dropdown (desktop) + Mobile hamburger */}
             <div className="flex items-center gap-2">
               
+              {/* Desktop Network Connection Config Toggle */}
+              <button
+                onClick={() => {
+                  setTestStatus("idle");
+                  setShowConfigModal(true);
+                  setThemeDropOpen(false);
+                  setUserDropOpen(false);
+                  setNavDropOpen(false);
+                }}
+                className={`hidden sm:flex p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl border cursor-pointer items-center justify-center transition-all ${
+                  useLocalApi 
+                    ? "text-amber-500 border-amber-200 bg-amber-50/50 dark:border-amber-900/30 dark:bg-amber-955/10" 
+                    : "text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800"
+                }`}
+                title="Configurações de Rede (Contingência)"
+              >
+                <Settings className="h-4.5 w-4.5" />
+              </button>
+
               {/* Desktop Theme Switcher */}
               <div className="hidden sm:block relative" ref={themeDropRef}>
                 <button
@@ -396,6 +459,26 @@ export const Navigation: React.FC = () => {
               )}
             </div>
 
+            {/* Mobile Network Settings Toggle */}
+            <div className="px-5 py-4 border-t border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-950/20">
+              <span className="text-xs font-bold text-zinc-550 dark:text-zinc-400">Rede de Contingência</span>
+              <button
+                onClick={() => {
+                  setMobileOpen(false);
+                  setTestStatus("idle");
+                  setShowConfigModal(true);
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all cursor-pointer ${
+                  useLocalApi
+                    ? "bg-amber-50 border-amber-200 text-amber-600 dark:bg-amber-955/20 dark:border-amber-900/30 dark:text-amber-455"
+                    : "bg-white border-zinc-200 text-zinc-650 dark:bg-zinc-850 dark:border-zinc-800 dark:text-zinc-300"
+                }`}
+              >
+                <Settings className="h-3.5 w-3.5" />
+                {useLocalApi ? "Local" : "Nuvem"}
+              </button>
+            </div>
+
             {/* Theme switcher at bottom of drawer */}
             <div className="px-5 py-4 border-t border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-950/20">
               <span className="text-xs font-bold text-zinc-550 dark:text-zinc-400">Tema do Sistema</span>
@@ -448,6 +531,121 @@ export const Navigation: React.FC = () => {
             )}
           </div>
         </>
+      )}
+
+      {/* Modal: Contingency Network Configurations (Global Navigation Modal) */}
+      {showConfigModal && (
+        <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-150 dark:border-zinc-800 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-6 animate-in fade-in zoom-in-95 duration-150 text-left">
+            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
+              <h3 className="font-extrabold text-lg text-zinc-900 dark:text-white flex items-center gap-2">
+                <Settings className="h-5 w-5 text-indigo-650 dark:text-indigo-400" />
+                Configurar Servidor Local
+              </h3>
+              <button
+                onClick={() => setShowConfigModal(false)}
+                className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <p className="text-xs text-zinc-500 leading-relaxed">
+                Caso a internet do retiro tenha caído, ative o redirecionamento abaixo para conectar os tablets ao notebook servidor da rede local.
+              </p>
+
+              {/* Switch for Redirect Toggle */}
+              <div className="flex items-center justify-between bg-zinc-50 dark:bg-zinc-850 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800/60">
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">Redirecionar para Servidor Local</span>
+                  <span className="text-[10px] text-zinc-450 dark:text-zinc-500 font-medium">Bater na API local do Notebook</span>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={useLocalApi}
+                    onChange={(e) => setUseLocalApi(e.target.checked)}
+                    className="sr-only peer"
+                    id="global-redirect-switch"
+                  />
+                  <div className="w-9 h-5 bg-zinc-200 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-650"></div>
+                </label>
+              </div>
+
+              {/* IP input */}
+              {useLocalApi && (
+                <div className="space-y-1.5 animate-in slide-in-from-top-2 duration-150">
+                  <label className="text-[10px] font-black uppercase text-zinc-450 dark:text-zinc-400 tracking-wider">URL do Servidor (IP e Porta do Notebook)</label>
+                  <input
+                    type="text"
+                    value={localApiUrl}
+                    onChange={(e) => setLocalApiUrl(e.target.value)}
+                    placeholder="ex: http://192.168.0.13:3001"
+                    className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-150 dark:border-zinc-800 focus:border-indigo-300 focus:ring-1 focus:ring-indigo-300 focus:outline-none text-sm rounded-xl text-zinc-900 dark:text-white"
+                  />
+                </div>
+              )}
+
+              {/* Test Connection Result */}
+              {useLocalApi && testStatus !== "idle" && (
+                <div className="text-xs font-bold transition-all animate-in fade-in duration-200">
+                  {testStatus === "testing" && (
+                    <span className="text-zinc-500 flex items-center gap-1.5">
+                      <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                      Testando conexão com o IP...
+                    </span>
+                  )}
+                  {testStatus === "success" && (
+                    <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                      <Wifi className="h-3.5 w-3.5" />
+                      Conectado com sucesso ao Notebook!
+                    </span>
+                  )}
+                  {testStatus === "error" && (
+                    <span className="text-red-600 dark:text-red-400 flex items-center gap-1.5">
+                      <WifiOff className="h-3.5 w-3.5" />
+                      Notebook não encontrado. Verifique se o backend está ligado e se o IP está correto.
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer Actions */}
+            <div className="flex items-center justify-between gap-3 border-t border-zinc-100 dark:border-zinc-800 pt-4">
+              {useLocalApi ? (
+                <button
+                  type="button"
+                  onClick={handleTestConfigConnection}
+                  disabled={testStatus === "testing"}
+                  className="px-4 py-2.5 bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-zinc-650 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 font-semibold text-xs rounded-xl transition-all cursor-pointer disabled:opacity-50"
+                >
+                  Testar Conexão
+                </button>
+              ) : (
+                <div />
+              )}
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowConfigModal(false)}
+                  className="px-4 py-2.5 bg-white hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-500 border border-zinc-200 dark:border-zinc-700 font-semibold text-xs rounded-xl transition-all cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveConfig}
+                  className="px-4 py-2.5 bg-indigo-650 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-md transition-all cursor-pointer"
+                >
+                  Salvar e Aplicar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );
