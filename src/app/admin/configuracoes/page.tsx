@@ -184,11 +184,11 @@ export default function ConfiguracoesAdminPage() {
             type="button"
             onClick={handleTriggerSync}
             disabled={syncStatus === "syncing"}
-            className="px-4 py-2.5 bg-amber-50 hover:bg-amber-100 dark:bg-amber-955/20 text-amber-600 dark:text-amber-450 border border-amber-100 dark:border-amber-900/30 font-semibold text-xs rounded-xl transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-            title="Solicita que o servidor force a sincronização das vendas locais imediatamente"
+            className="px-4 py-2.5 bg-amber-50 hover:bg-amber-100 dark:bg-amber-955/20 text-amber-600 dark:text-amber-455 border border-amber-100 dark:border-amber-900/30 font-semibold text-xs rounded-xl transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            title="Solicita que o servidor force a sincronização de todo o banco de dados local imediatamente"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${syncStatus === "syncing" ? "animate-spin" : ""}`} />
-            Sincronizar Vendas Agora
+            Sincronizar Banco de Dados Agora
           </button>
 
           <button
