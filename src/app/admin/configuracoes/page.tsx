@@ -194,7 +194,7 @@ export default function ConfiguracoesAdminPage() {
           <button
             type="button"
             onClick={handleSave}
-            className="px-5 py-2.5 bg-indigo-650 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
+            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
           >
             <Save className="h-3.5 w-3.5" />
             Salvar Configurações
