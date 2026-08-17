@@ -99,8 +99,10 @@ export const ProdutosTable: React.FC = () => {
             <TableRow>
               <TableHeaderCell>Miniatura</TableHeaderCell>
               <TableSortHeaderCell label="Produto" field="name" currentSortField={sortField} sortDir={sortDir} onSort={handleSort} />
-              <TableSortHeaderCell label="Preço Unitário" field="price" currentSortField={sortField} sortDir={sortDir} onSort={handleSort} />
-              <TableSortHeaderCell label="Quantidade" field="stock" currentSortField={sortField} sortDir={sortDir} onSort={handleSort} className="text-center" />
+              <TableSortHeaderCell label="Venda" field="price" currentSortField={sortField} sortDir={sortDir} onSort={handleSort} />
+              <TableHeaderCell>Custo Unit.</TableHeaderCell>
+              <TableHeaderCell>Patrocinador</TableHeaderCell>
+              <TableSortHeaderCell label="Estoque" field="stock" currentSortField={sortField} sortDir={sortDir} onSort={handleSort} className="text-center" />
               <TableHeaderCell>Status</TableHeaderCell>
               <TableHeaderCell className="text-right">Ações</TableHeaderCell>
             </TableRow>
@@ -109,6 +111,9 @@ export const ProdutosTable: React.FC = () => {
             {activeProducts.map((product) => {
               const isLow = product.stock <= (product.minStock ?? 5);
               const isOut = product.stock === 0;
+              const cost = product.costPrice ?? 0;
+              const unitProfit = product.price - cost;
+              const margin = product.price > 0 ? ((unitProfit / product.price) * 100).toFixed(0) : "0";
 
               return (
                 <TableRow
@@ -149,8 +154,27 @@ export const ProdutosTable: React.FC = () => {
                   </TableCell>
 
                   {/* Price */}
-                  <TableCell className="font-bold text-zinc-900 dark:text-white">
+                  <TableCell className="font-bold text-emerald-600 dark:text-emerald-400">
                     R$ {product.price.toFixed(2)}
+                  </TableCell>
+
+                  {/* Cost Price & Margin */}
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                        R$ {cost.toFixed(2)}
+                      </span>
+                      <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">
+                        Margem: {margin}%
+                      </span>
+                    </div>
+                  </TableCell>
+
+                  {/* Sponsor Name */}
+                  <TableCell>
+                    <span className="text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 px-2 py-0.5 rounded-md border border-amber-100 dark:border-amber-900/40 inline-block max-w-[140px] truncate">
+                      {product.sponsorName || "Retiro"}
+                    </span>
                   </TableCell>
 
                   {/* Stock */}

@@ -20,6 +20,9 @@ export const useProdutosState = (): ProdutosContextType => {
   const [productId, setProductId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [price, setPriceState] = useState("");
+  const [costPrice, setCostPriceState] = useState("");
+  const [sponsorName, setSponsorName] = useState("");
+  const [initialStock, setInitialStock] = useState("");
 
   const formatCurrency = (value: string) => {
     const digits = value.replace(/\D/g, "");
@@ -34,6 +37,10 @@ export const useProdutosState = (): ProdutosContextType => {
 
   const setPrice = (val: string) => {
     setPriceState(formatCurrency(val));
+  };
+
+  const setCostPrice = (val: string) => {
+    setCostPriceState(formatCurrency(val));
   };
   const [stock, setStock] = useState("");
   const [minStock, setMinStock] = useState("5");
@@ -208,6 +215,9 @@ export const useProdutosState = (): ProdutosContextType => {
     setProductId(null);
     setName("");
     setPrice("");
+    setCostPriceState("");
+    setSponsorName("");
+    setInitialStock("");
     setStock("");
     setMinStock("5");
     setCategory("Outros");
@@ -225,6 +235,9 @@ export const useProdutosState = (): ProdutosContextType => {
     setProductId(product.id);
     setName(product.name);
     setPrice(product.price.toFixed(2).replace(".", ","));
+    setCostPriceState((product.costPrice ?? 0).toFixed(2).replace(".", ","));
+    setSponsorName(product.sponsorName || "");
+    setInitialStock((product.initialStock ?? product.stock).toString());
     setStock(product.stock.toString());
     setMinStock((product.minStock ?? 5).toString());
     setCategory(product.category ?? "Outros");
@@ -242,6 +255,9 @@ export const useProdutosState = (): ProdutosContextType => {
     setProductId(product.id);
     setName(product.name);
     setPrice(product.price.toFixed(2).replace(".", ","));
+    setCostPriceState((product.costPrice ?? 0).toFixed(2).replace(".", ","));
+    setSponsorName(product.sponsorName || "");
+    setInitialStock((product.initialStock ?? product.stock).toString());
     setStock(product.stock.toString());
     setMinStock((product.minStock ?? 5).toString());
     setCategory(product.category ?? "Outros");
@@ -297,11 +313,19 @@ export const useProdutosState = (): ProdutosContextType => {
 
     const priceCleaned = price.replace(/\./g, "").replace(",", ".");
     const priceNum = parseFloat(priceCleaned);
+    const costCleaned = costPrice ? costPrice.replace(/\./g, "").replace(",", ".") : "0";
+    const costNum = parseFloat(costCleaned) || 0;
     const stockNum = parseInt(stock, 10);
     const minStockNum = parseInt(minStock, 10);
+    const initialStockNum = initialStock ? parseInt(initialStock, 10) : stockNum;
 
     if (isNaN(priceNum) || priceNum <= 0) {
-      setFormError("O preço deve ser um valor positivo válido.");
+      setFormError("O preço de venda deve ser um valor positivo válido.");
+      return;
+    }
+
+    if (costNum < 0) {
+      setFormError("O preço de custo não pode ser negativo.");
       return;
     }
 
@@ -332,6 +356,9 @@ export const useProdutosState = (): ProdutosContextType => {
         const updated = await productService.updateProduct(productId, {
           name: name.trim(),
           price: priceNum,
+          costPrice: costNum,
+          sponsorName: sponsorName.trim(),
+          initialStock: initialStockNum,
           stock: stockNum,
           imageUrl: finalImageUrl,
           category: category as any,
@@ -353,6 +380,8 @@ export const useProdutosState = (): ProdutosContextType => {
           const changes: string[] = [];
           if (oldProduct.name !== name.trim()) changes.push(`nome de "${oldProduct.name}" para "${name.trim()}"`);
           if (oldProduct.price !== priceNum) changes.push(`preço de R$ ${oldProduct.price.toFixed(2)} para R$ ${priceNum.toFixed(2)}`);
+          if ((oldProduct.costPrice ?? 0) !== costNum) changes.push(`custo de R$ ${(oldProduct.costPrice ?? 0).toFixed(2)} para R$ ${costNum.toFixed(2)}`);
+          if ((oldProduct.sponsorName || "") !== sponsorName.trim()) changes.push(`investidor para "${sponsorName.trim() || "Nenhum"}"`);
           if (oldProduct.stock !== stockNum) changes.push(`estoque de ${oldProduct.stock} para ${stockNum}`);
 
           // Normalise before comparing to avoid undefined vs default false positives
@@ -372,8 +401,8 @@ export const useProdutosState = (): ProdutosContextType => {
             description: logDescription,
             metadata: {
               productId,
-              old: { name: oldProduct.name, price: oldProduct.price, stock: oldProduct.stock, minStock: oldProduct.minStock, category: oldProduct.category },
-              new: { name: name.trim(), price: priceNum, stock: stockNum, minStock: minStockNum, category }
+              old: { name: oldProduct.name, price: oldProduct.price, costPrice: oldProduct.costPrice, stock: oldProduct.stock, minStock: oldProduct.minStock, category: oldProduct.category },
+              new: { name: name.trim(), price: priceNum, costPrice: costNum, stock: stockNum, minStock: minStockNum, category }
             }
           });
         }
@@ -386,6 +415,9 @@ export const useProdutosState = (): ProdutosContextType => {
         const created = await productService.createProduct({
           name: name.trim(),
           price: priceNum,
+          costPrice: costNum,
+          sponsorName: sponsorName.trim(),
+          initialStock: initialStockNum,
           stock: stockNum,
           imageUrl: "",
           active: true,
@@ -414,11 +446,13 @@ export const useProdutosState = (): ProdutosContextType => {
           userId: operatorId,
           userName: operatorName,
           action: "product_create",
-          description: `${operatorName} cadastrou o produto "${name.trim()}" (${category}) com preço R$ ${priceNum.toFixed(2)}, estoque inicial de ${stockNum} e estoque crítico de ${minStockNum}`,
+          description: `${operatorName} cadastrou o produto "${name.trim()}" (${category}) com preço de venda R$ ${priceNum.toFixed(2)}, custo R$ ${costNum.toFixed(2)}, patrocinador "${sponsorName.trim() || "Nenhum"}", estoque inicial de ${stockNum}`,
           metadata: {
             productId: created.id,
             name: name.trim(),
             price: priceNum,
+            costPrice: costNum,
+            sponsorName: sponsorName.trim(),
             stock: stockNum,
             minStock: minStockNum,
             category
@@ -528,6 +562,12 @@ export const useProdutosState = (): ProdutosContextType => {
     setName,
     price,
     setPrice,
+    costPrice,
+    setCostPrice,
+    sponsorName,
+    setSponsorName,
+    initialStock,
+    setInitialStock,
     stock,
     setStock,
     minStock,

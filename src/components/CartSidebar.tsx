@@ -7,6 +7,7 @@ import { QuickUserModal } from "./QuickUserModal";
 import { Modal } from "./ui/Modal";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
+import { CpfSearchSelect } from "./ui/CpfSearchSelect";
 import { Trash2, Plus, Minus, CreditCard, UserCheck, ShoppingBag, AlertTriangle } from "lucide-react";
 import { logService } from "@/services/logService";
 
@@ -326,14 +327,23 @@ export const CartSidebar: React.FC = () => {
           </button>
         </div>
 
-        {/* Client CPF Lookup */}
-        <Input
-          label="CPF do Cliente"
+        {/* Client CPF Lookup com Autocomplete & Busca */}
+        <CpfSearchSelect
+          label="CPF do Cliente *"
           id="cart-client-cpf"
-          placeholder="000.000.000-00"
+          placeholder="Digite CPF ou Nome do cliente..."
           value={cpf}
-          onChange={handleCpfChange}
-          icon={<UserCheck className="h-5 w-5" />}
+          onChange={(newCpf, selectedUser) => {
+            setCpf(newCpf);
+            if (selectedUser) {
+              // Se selecionou direto do dropdown, já associa o cliente
+              setError("");
+            }
+          }}
+          onAddNewUser={(typedCpf) => {
+            setQuickCpf(typedCpf);
+            setIsQuickModalOpen(true);
+          }}
           disabled={cart.length === 0}
         />
 

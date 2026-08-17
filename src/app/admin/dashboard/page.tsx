@@ -7,6 +7,7 @@ import { KpiCards } from "./components/KpiCards";
 import { SalesChart } from "./components/SalesChart";
 import { CategoryChart } from "./components/CategoryChart";
 import { TopProductsChart } from "./components/TopProductsChart";
+import { FinancialComparisonChart } from "./components/FinancialComparisonChart";
 import { TopBuyersList } from "./components/TopBuyersList";
 import { RecentSalesTable } from "./components/RecentSalesTable";
 import { ShieldAlert, RefreshCw, AlertCircle, ShoppingBag } from "lucide-react";
@@ -125,6 +126,8 @@ export default function DashboardPage() {
         {/* Dynamic Charts Grid */}
         {analytics && analytics.summary.totalSalesCount > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Gráfico Comparativo: Faturamento vs Custo vs Lucro */}
+            <FinancialComparisonChart />
             <TopProductsChart />
             <CategoryChart />
             <SalesChart />

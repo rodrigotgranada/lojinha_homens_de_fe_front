@@ -57,7 +57,7 @@ export const PdvCatalog = () => {
           <p className="text-xs">Tente ajustar a ortografia ou limpar o termo.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 overflow-y-auto max-h-[60vh] md:flex-1 md:min-h-0 pr-1 pb-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 auto-rows-max items-start overflow-y-auto max-h-[60vh] md:flex-1 md:min-h-0 pr-1 pb-4">
           {filteredProducts.map((product) => (
             <ProductCard key={product.id} product={product} compact={true} />
           ))}

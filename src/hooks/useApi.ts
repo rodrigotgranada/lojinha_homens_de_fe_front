@@ -36,6 +36,9 @@ export interface Product {
   name: string;
   price: number;
   stock: number;
+  costPrice?: number;
+  sponsorName?: string;
+  initialStock?: number;
   imageUrl: string;
   active?: boolean;
   category?: string;
@@ -48,6 +51,7 @@ export interface SaleItem {
   productId: string;
   quantity: number;
   priceAtPurchase: number;
+  costAtPurchase?: number;
 }
 
 export interface Sale {
@@ -62,6 +66,9 @@ export interface Sale {
 
 export interface AnalyticsSummary {
   totalRevenue: number;
+  totalCost?: number;
+  totalProfit?: number;
+  profitMargin?: number;
   pendingRevenue: number;
   totalSalesCount: number;
   pagoCount: number;
@@ -73,7 +80,35 @@ export interface ProductStat {
   name: string;
   quantity: number;
   revenue: number;
+  cost?: number;
+  profit?: number;
   category: string;
+  sponsorName?: string;
+}
+
+export interface InvestorProductItem {
+  productId: string;
+  name: string;
+  costPrice: number;
+  salePrice: number;
+  initialStock: number;
+  currentStock: number;
+  soldQuantity: number;
+  totalRevenue: number;
+  costToRepay: number;
+  totalProfit: number;
+  investedAmount: number;
+}
+
+export interface InvestorReportItem {
+  sponsorName: string;
+  products: InvestorProductItem[];
+  totalInvested: number;
+  totalSoldQuantity: number;
+  totalRevenue: number;
+  totalToRepay: number;
+  totalProfitForRetreat: number;
+  repaymentProgress: number;
 }
 
 export interface BuyerStat {
@@ -91,8 +126,92 @@ export interface SalesTimelinePoint {
 export interface AnalyticsData {
   summary: AnalyticsSummary;
   topSellingProducts: ProductStat[];
+  investorsReport?: InvestorReportItem[];
   topBuyers: BuyerStat[];
   salesTimeline: SalesTimelinePoint[];
+}
+
+export interface ExpenseItem {
+  _id?: string;
+  id?: string;
+  description: string;
+  amount: number;
+  paidBy: string;
+  payerPhone?: string;
+  isDonation: boolean;
+  status: "PENDENTE" | "REEMBOLSADO_PARCIAL" | "REEMBOLSADO" | "DOACAO";
+  repaidAmount: number;
+  receiptUrl?: string;
+  notes?: string;
+  date?: string;
+}
+
+export interface Expense {
+  id: string;
+  _id?: string;
+  eventId: string;
+  title: string;
+  category: string;
+  nature?: "INFRAESTRUTURA" | "OPERACIONAL";
+  description?: string;
+  items: ExpenseItem[];
+  totalAmount: number;
+  totalRepaid: number;
+  createdAt?: string;
+}
+
+export interface EventIncome {
+  id: string;
+  _id?: string;
+  eventId: string;
+  title: string;
+  type: "INSCRICOES" | "RIFA" | "EVENTO_BENEFICENTE" | "DOACAO" | "OUTROS";
+  amount: number;
+  date: string;
+  notes?: string;
+}
+
+export interface PayerReportItem {
+  payerName: string;
+  payerPhone: string;
+  items: Array<{
+    expenseTitle: string;
+    description: string;
+    amount: number;
+    repaidAmount: number;
+    status: string;
+    isDonation: boolean;
+    nature?: string;
+  }>;
+  totalPaid: number;
+  totalRepaid: number;
+  balanceToRepay: number;
+  isFullyRepaid: boolean;
+  donationsCount: number;
+}
+
+export interface EventFinancialSummary {
+  summary: {
+    totalExpensesAmount: number;
+    totalInfraExpenses?: number;
+    totalOperExpenses?: number;
+    totalExpensesRepaid: number;
+    totalExpensesPendingRepay: number;
+    totalDonatedItemsCount: number;
+    totalStoreInvestment?: number;
+    totalStoreRepaid?: number;
+    totalStorePendingRepay?: number;
+    totalExtraIncomes: number;
+    lojinhaRevenue: number;
+    lojinhaCost: number;
+    lojinhaProfit: number;
+    totalAvailableEventFunds: number;
+    finalEventBalance: number;
+  };
+  categoryTotals: Record<string, number>;
+  payersReport: PayerReportItem[];
+  expenses: Expense[];
+  incomes: EventIncome[];
 }
 
 export interface LogEntry {
@@ -295,6 +414,69 @@ export const useApi = () => {
     });
   };
 
+  // --- Despesas & Obras ---
+  const getExpenses = async (eventId: string): Promise<Expense[]> => {
+    return apiFetch<Expense[]>(`/expenses?eventId=${eventId}`);
+  };
+
+  const getEventFinancialSummary = async (eventId: string): Promise<EventFinancialSummary> => {
+    return apiFetch<EventFinancialSummary>(`/expenses/summary/${eventId}`);
+  };
+
+  const createExpense = async (data: { eventId: string; title: string; category?: string; nature?: "INFRAESTRUTURA" | "OPERACIONAL"; description?: string; operatorName?: string }): Promise<Expense> => {
+    return apiFetch<Expense>("/expenses", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  };
+
+  const addExpenseItem = async (expenseId: string, item: Omit<ExpenseItem, "id" | "_id"> & { operatorName?: string }): Promise<Expense> => {
+    return apiFetch<Expense>(`/expenses/${expenseId}/items`, {
+      method: "POST",
+      body: JSON.stringify(item),
+    });
+  };
+
+  const updateExpenseItem = async (expenseId: string, itemId: string, item: Partial<ExpenseItem> & { operatorName?: string }): Promise<Expense> => {
+    return apiFetch<Expense>(`/expenses/${expenseId}/items/${itemId}`, {
+      method: "PATCH",
+      body: JSON.stringify(item),
+    });
+  };
+
+  const deleteExpenseItem = async (expenseId: string, itemId: string, operatorName?: string): Promise<Expense> => {
+    return apiFetch<Expense>(`/expenses/${expenseId}/items/${itemId}`, {
+      method: "DELETE",
+      body: JSON.stringify({ operatorName }),
+    });
+  };
+
+  const deleteExpense = async (expenseId: string, operatorName?: string): Promise<void> => {
+    return apiFetch<void>(`/expenses/${expenseId}`, {
+      method: "DELETE",
+      body: JSON.stringify({ operatorName }),
+    });
+  };
+
+  // --- Receitas Extras do Evento ---
+  const getEventIncomes = async (eventId: string): Promise<EventIncome[]> => {
+    return apiFetch<EventIncome[]>(`/expenses/incomes/list?eventId=${eventId}`);
+  };
+
+  const createEventIncome = async (data: { eventId: string; title: string; type: string; amount: number; notes?: string; operatorName?: string }): Promise<EventIncome> => {
+    return apiFetch<EventIncome>("/expenses/incomes", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  };
+
+  const deleteEventIncome = async (id: string, operatorName?: string): Promise<void> => {
+    return apiFetch<void>(`/expenses/incomes/${id}`, {
+      method: "DELETE",
+      body: JSON.stringify({ operatorName }),
+    });
+  };
+
   return useMemo(() => ({
     getProducts,
     updateProductStock,
@@ -320,5 +502,15 @@ export const useApi = () => {
     createCategory,
     updateCategory,
     deleteCategory,
+    getExpenses,
+    getEventFinancialSummary,
+    createExpense,
+    addExpenseItem,
+    updateExpenseItem,
+    deleteExpenseItem,
+    deleteExpense,
+    getEventIncomes,
+    createEventIncome,
+    deleteEventIncome,
   }), []);
 };

@@ -25,8 +25,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, compact = fal
   const isOutOfStock = product.stock === 0;
 
   return (
-    <div className={`bg-white dark:bg-zinc-900 border border-zinc-150 dark:border-zinc-800 flex flex-col hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 h-full group ${
-      compact ? "p-3 rounded-2xl gap-3 shadow-xs" : "p-4 rounded-3xl gap-4 shadow-sm"
+    <div className={`bg-white dark:bg-zinc-900 border border-zinc-150 dark:border-zinc-800 flex flex-col hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 group ${
+      compact ? "p-3 rounded-2xl gap-2.5 shadow-xs h-auto max-w-[200px]" : "p-4 rounded-3xl gap-4 shadow-sm h-full"
     }`}>
       {/* Image */}
       <div className={`relative aspect-square w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800 overflow-hidden flex items-center justify-center ${
