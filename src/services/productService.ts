@@ -1,70 +1,57 @@
-import { Product } from "@/hooks/useApi";
-
-const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "true";
-const API_BASE = USE_MOCK
-  ? (process.env.NEXT_PUBLIC_MOCK_URL || "http://localhost:5006")
-  : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001");
-
-async function fetchJson<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const url = `${API_BASE}${endpoint}`;
-  const res = await fetch(url, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options?.headers,
-    },
-  });
-  if (!res.ok) {
-    throw new Error(`ProductService error: ${res.statusText}`);
-  }
-  return await res.json();
-}
+import { apiFetch } from "./apiClient";
+import { Product, ImportPreviousStockPayload } from "@/types";
 
 export const productService = {
-  /**
-   * Retrieves all products from the mock database.
-   */
-  getProducts: async (all = false): Promise<Product[]> => {
-    const endpoint = all ? "/products?all=true" : "/products";
-    return fetchJson<Product[]>(endpoint);
+  getProducts: async (eventId?: string): Promise<Product[]> => {
+    const query = eventId ? `?eventId=${eventId}` : "";
+    const list = await apiFetch<Product[]>(`/products${query}`);
+    return list.filter((p) => p.active !== false);
   },
 
-  /**
-   * Creates a new product.
-   */
+  getAllProducts: async (eventId?: string): Promise<Product[]> => {
+    const query = eventId ? `?all=true&eventId=${eventId}` : "?all=true";
+    return apiFetch<Product[]>(`/products${query}`);
+  },
+
+  getRemainingStockFromEvent: async (eventId: string): Promise<Product[]> => {
+    return apiFetch<Product[]>(`/products/remaining-stock/${eventId}`);
+  },
+
+  importStockReconciliation: async (payload: ImportPreviousStockPayload): Promise<{
+    importedCount: number;
+    writtenOffCount: number;
+    createdProducts: Product[];
+  }> => {
+    return apiFetch("/products/import-stock-reconciliation", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  updateProductStock: async (productId: string, newStock: number): Promise<Product> => {
+    return apiFetch<Product>(`/products/${productId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ stock: newStock }),
+    });
+  },
+
   createProduct: async (product: Omit<Product, "id">): Promise<Product> => {
-    return fetchJson<Product>("/products", {
+    return apiFetch<Product>("/products", {
       method: "POST",
       body: JSON.stringify(product),
     });
   },
 
-  /**
-   * Updates an existing product.
-   */
   updateProduct: async (productId: string, product: Partial<Product>): Promise<Product> => {
-    return fetchJson<Product>(`/products/${productId}`, {
+    return apiFetch<Product>(`/products/${productId}`, {
       method: "PATCH",
       body: JSON.stringify(product),
     });
   },
 
-  /**
-   * Deletes a product.
-   */
   deleteProduct: async (productId: string): Promise<void> => {
-    return fetchJson<void>(`/products/${productId}`, {
+    return apiFetch<void>(`/products/${productId}`, {
       method: "DELETE",
     });
   },
-
-  /**
-   * Increments or decrements a product's stock levels.
-   */
-  updateStock: async (productId: string, newStock: number): Promise<Product> => {
-    return fetchJson<Product>(`/products/${productId}`, {
-      method: "PATCH",
-      body: JSON.stringify({ stock: newStock }),
-    });
-  }
 };

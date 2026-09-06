@@ -137,7 +137,6 @@ export const useEventState = () => {
           name: formData.name.trim(),
           isActive: formData.status === "ATIVO",
           status: formData.status,
-          createdAt: new Date().toISOString(),
           location: formData.location.trim() || undefined,
           startDate: formData.startDate || undefined,
           endDate: formData.endDate || undefined

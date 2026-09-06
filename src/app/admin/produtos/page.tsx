@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useApp } from "@/context/AppContext";
 import Link from "next/link";
-import { ShieldAlert, Plus } from "lucide-react";
+import { ShieldAlert, Plus, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ProdutosProvider, useProdutos } from "./context/ProdutosContext";
 import { ProdutosAlerts } from "./components/ProdutosAlerts";
@@ -11,6 +11,7 @@ import { ProdutosTabs } from "./components/ProdutosTabs";
 import { ProdutosTable } from "./components/ProdutosTable";
 import { ProdutoModal } from "./components/ProdutoModal";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { ImportPreviousStockModal } from "./components/ImportPreviousStockModal";
 
 function GerenciamentoProdutosContent() {
   const {
@@ -20,8 +21,12 @@ function GerenciamentoProdutosContent() {
     handleConfirmAction,
     productNameToDelete,
     deleting,
-    confirmAction
+    confirmAction,
+    loadProducts,
   } = useProdutos();
+
+  const { activeEvent } = useApp();
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   return (
     <div className="flex-1 flex flex-col gap-6 py-4">
@@ -39,10 +44,23 @@ function GerenciamentoProdutosContent() {
           </p>
         </div>
 
-        <Button onClick={handleOpenAddModal} className="flex items-center gap-2 cursor-pointer">
-          <Plus className="h-5 w-5" />
-          Novo Produto
-        </Button>
+        <div className="flex items-center gap-2">
+          {activeEvent && (
+            <Button
+              variant="secondary"
+              onClick={() => setIsImportModalOpen(true)}
+              className="flex items-center gap-2 cursor-pointer border-indigo-200 text-indigo-700 dark:border-indigo-900/40 dark:text-indigo-300"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Importar Sobras de Retiros
+            </Button>
+          )}
+
+          <Button onClick={handleOpenAddModal} className="flex items-center gap-2 cursor-pointer">
+            <Plus className="h-5 w-5" />
+            Novo Produto
+          </Button>
+        </div>
       </div>
 
       {/* Alertas */}
@@ -56,6 +74,16 @@ function GerenciamentoProdutosContent() {
 
       {/* Modais de CRUD */}
       <ProdutoModal />
+
+      {/* Modal de Importação e Conciliação de Sobras */}
+      {activeEvent && (
+        <ImportPreviousStockModal
+          isOpen={isImportModalOpen}
+          onClose={() => setIsImportModalOpen(false)}
+          currentEventId={activeEvent.id}
+          onSuccess={() => loadProducts()}
+        />
+      )}
 
       {/* Modal de Confirmação de Desativação */}
       <ConfirmModal

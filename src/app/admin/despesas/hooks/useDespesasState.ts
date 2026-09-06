@@ -346,6 +346,7 @@ export const useDespesasState = (): DespesasContextType => {
     lojinhaRevenue: 0,
     lojinhaCost: 0,
     lojinhaProfit: 0,
+    immediateCashAvailable: 0,
     totalAvailableEventFunds: 0,
     finalEventBalance: 0,
   };

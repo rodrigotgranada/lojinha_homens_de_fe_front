@@ -72,4 +72,5 @@ export interface ProdutosContextType {
   handleRemoveImage: () => void;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
   categories: string[];
+  loadProducts: () => Promise<void>;
 }

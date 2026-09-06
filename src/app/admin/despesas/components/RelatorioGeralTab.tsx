@@ -2,16 +2,14 @@
 
 import React from "react";
 import {
-  FileText,
   DollarSign,
   Layers,
   Users,
-  Store,
-  Wallet,
   TrendingUp,
-  AlertTriangle,
+  Wallet,
   CheckCircle2,
-  Printer
+  Printer,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useDespesas } from "../context/DespesasContext";
@@ -22,20 +20,20 @@ export const RelatorioGeralTab: React.FC = () => {
     expensesList,
     incomesList,
     payersReport,
-    selectedEvent,
     formatMoney,
-    handlePrint
+    handlePrint,
   } = useDespesas();
 
-  const totalIncomes = summary.totalExtraIncomes;
-  const lojinhaRev = summary.lojinhaRevenue;
-  const lojinhaCst = summary.lojinhaCost;
-  const lojinhaProf = summary.lojinhaProfit;
-  const totalFunds = summary.totalAvailableEventFunds;
-  const totalExpenses = summary.totalExpensesAmount;
-  const finalBalance = summary.finalEventBalance;
-  const pendingRepay = summary.totalExpensesPendingRepay;
-  const totalRepaid = summary.totalExpensesRepaid;
+  const totalIncomes = summary.totalExtraIncomes || 0;
+  const lojinhaRev = summary.lojinhaRevenue || 0;
+  const lojinhaCst = summary.lojinhaCost || 0;
+  const lojinhaProf = summary.lojinhaProfit || 0;
+  const totalFunds = summary.totalAvailableEventFunds || 0;
+  const totalExpenses = summary.totalExpensesAmount || 0;
+  const finalBalance = summary.finalEventBalance || 0;
+  const pendingRepay = summary.totalExpensesPendingRepay || 0;
+  const totalRepaid = summary.totalExpensesRepaid || 0;
+  const immediateCash = summary.immediateCashAvailable ?? (totalIncomes + lojinhaRev - totalRepaid - (summary.totalStoreRepaid || 0));
 
   return (
     <div className="space-y-6">
@@ -51,7 +49,7 @@ export const RelatorioGeralTab: React.FC = () => {
             </h3>
           </div>
           <p className="text-xs text-zinc-500 mt-1">
-            Demonstrativo completo de todas as Entradas (Lojinha + Receitas extras), Saídas (Obras + Operação), Reembolsos e Saldo Final.
+            Demonstrativo completo de Entradas, Saídas, Reembolsos aos voluntários, Disponibilidade Física de Caixa e Superávit Final.
           </p>
         </div>
 
@@ -62,6 +60,30 @@ export const RelatorioGeralTab: React.FC = () => {
           <Printer className="h-4 w-4" />
           Imprimir Relatório Completo (A4)
         </Button>
+      </div>
+
+      {/* DESTAQUE: DISPONIBILIDADE IMEDIATA EM CAIXA VS SUPERÁVIT */}
+      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-700 rounded-3xl p-6 text-white shadow-xl flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-extrabold tracking-wide uppercase">
+            <Sparkles className="h-3.5 w-3.5" />
+            Fluxo de Caixa Físico (Disponibilidade Real)
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-black">
+            {formatMoney(immediateCash)}
+          </h2>
+          <p className="text-xs sm:text-sm text-emerald-100 max-w-2xl">
+            Total de dinheiro real arrecadado (Receitas Extras + Vendas Loja) <strong>subtraído apenas do que já foi devolvido fisicamente aos irmãos</strong>. Este é o saldo em mãos neste momento.
+          </p>
+        </div>
+
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl shrink-0 flex flex-col gap-1 min-w-[240px]">
+          <span className="text-xs text-emerald-100 font-bold uppercase">Superávit Final Previsto</span>
+          <span className="text-2xl font-black">{formatMoney(finalBalance)}</span>
+          <span className="text-[10px] text-emerald-200">
+            (Após quitar todos os R$ {formatMoney(pendingRepay + (summary.totalStorePendingRepay || 0))} restantes)
+          </span>
+        </div>
       </div>
 
       {/* QUADRO 1: RESUMO DO BALANÇO FINANCEIRO */}

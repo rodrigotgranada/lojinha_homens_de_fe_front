@@ -6,45 +6,18 @@ import { usePathname, useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import {
   Menu,
-  X,
-  LogOut,
-  LogIn,
-  User,
-  Shield,
-  LayoutDashboard,
-  Store,
-  Boxes,
-  Calendar,
-  FileText,
   ChevronDown,
-  Activity,
-  Zap,
+  LayoutDashboard,
+  Settings,
   Sun,
   Moon,
   Monitor,
-  Tag,
-  Settings,
-  RefreshCw,
-  Wifi,
-  WifiOff,
-  TrendingUp,
-  Wrench,
-  DollarSign
 } from "lucide-react";
-
-const adminLinks = [
-  { name: "Painel", href: "/admin", icon: <LayoutDashboard className="h-4 w-4" /> },
-  { name: "PDV", href: "/admin/pdv", icon: <Store className="h-4 w-4" /> },
-  { name: "Estoque", href: "/admin/produtos", icon: <Boxes className="h-4 w-4" /> },
-  { name: "Despesas & Obras", href: "/admin/despesas", icon: <Wrench className="h-4 w-4" /> },
-  { name: "Prestação Lojinha", href: "/admin/prestacao-contas", icon: <TrendingUp className="h-4 w-4" /> },
-  { name: "Categorias", href: "/admin/categorias", icon: <Tag className="h-4 w-4" /> },
-  { name: "Eventos", href: "/admin/eventos", icon: <Calendar className="h-4 w-4" /> },
-  { name: "Vendas", href: "/admin/vendas", icon: <FileText className="h-4 w-4" /> },
-  { name: "Clientes", href: "/admin/clientes", icon: <User className="h-4 w-4" /> },
-  { name: "Logs", href: "/admin/logs", icon: <Activity className="h-4 w-4" /> },
-  { name: "Configurações", href: "/admin/configuracoes", icon: <Settings className="h-4 w-4" /> },
-];
+import { adminLinks } from "./navigation/navLinks";
+import { EventBadgeSelector } from "./navigation/EventBadgeSelector";
+import { UserMenuDropdown } from "./navigation/UserMenuDropdown";
+import { MobileNavDrawer } from "./navigation/MobileNavDrawer";
+import { NetworkConfigModal } from "./navigation/NetworkConfigModal";
 
 export const Navigation: React.FC = () => {
   const { currentUser, logoutUser, activeEvent } = useApp();
@@ -62,8 +35,6 @@ export const Navigation: React.FC = () => {
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [useLocalApi, setUseLocalApi] = useState(false);
   const [localApiUrl, setLocalApiUrl] = useState("http://localhost:3001");
-  const [testStatus, setTestStatus] = useState<"idle" | "testing" | "success" | "error">("idle");
-  const [syncStatus, setSyncStatus] = useState<"idle" | "syncing" | "success" | "error">("idle");
 
   const navDropRef = useRef<HTMLDivElement>(null);
   const userDropRef = useRef<HTMLDivElement>(null);
@@ -73,9 +44,11 @@ export const Navigation: React.FC = () => {
     if (typeof window === "undefined") return;
     const root = window.document.documentElement;
     root.classList.remove("light", "dark");
-    
+
     if (t === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
       root.classList.add(systemTheme);
     } else {
       root.classList.add(t);
@@ -84,7 +57,11 @@ export const Navigation: React.FC = () => {
 
   useEffect(() => {
     setMounted(true);
-    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | "system" | null;
+    const savedTheme = localStorage.getItem("theme") as
+      | "light"
+      | "dark"
+      | "system"
+      | null;
     if (savedTheme) {
       setTheme(savedTheme);
       applyTheme(savedTheme);
@@ -97,68 +74,6 @@ export const Navigation: React.FC = () => {
     }
   }, []);
 
-  const handleSaveConfig = () => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("use_local_api", String(useLocalApi));
-      localStorage.setItem("local_api_url", localApiUrl.trim());
-      setShowConfigModal(false);
-      window.location.reload();
-    }
-  };
-
-  const handleTestConfigConnection = async () => {
-    setTestStatus("testing");
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4000);
-
-      const res = await fetch(`${localApiUrl.trim()}/sync/health`, {
-        method: "GET",
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-
-      if (res.ok) {
-        setTestStatus("success");
-      } else {
-        setTestStatus("error");
-      }
-    } catch {
-      setTestStatus("error");
-    }
-  };
-
-  const handleTriggerSync = async () => {
-    setSyncStatus("syncing");
-    try {
-      const res = await fetch(`${localApiUrl.trim()}/sync/trigger`, {
-        method: "POST",
-      });
-      if (res.ok) {
-        setSyncStatus("success");
-        setTimeout(() => setSyncStatus("idle"), 3000);
-      } else {
-        setSyncStatus("error");
-        setTimeout(() => setSyncStatus("idle"), 3000);
-      }
-    } catch {
-      setSyncStatus("error");
-      setTimeout(() => setSyncStatus("idle"), 3000);
-    }
-  };
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleChange = () => {
-      if (theme === "system") {
-        applyTheme("system");
-      }
-    };
-    mediaQuery.addEventListener("change", handleChange);
-    return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [theme]);
-
   const handleThemeChange = (newTheme: "light" | "dark" | "system") => {
     setTheme(newTheme);
     localStorage.setItem("theme", newTheme);
@@ -166,7 +81,6 @@ export const Navigation: React.FC = () => {
     setThemeDropOpen(false);
   };
 
-  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (navDropRef.current && !navDropRef.current.contains(e.target as Node)) {
@@ -183,18 +97,15 @@ export const Navigation: React.FC = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Close mobile menu on route change
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
-
   const handleLogout = () => {
     logoutUser();
     router.push("/");
   };
 
   if (!mounted) {
-    return <nav className="bg-white dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 sticky top-0 z-40 h-16 w-full" />;
+    return (
+      <nav className="bg-white dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 sticky top-0 z-40 h-16 w-full" />
+    );
   }
 
   const isAdmin = currentUser?.role === "ADMIN";
@@ -205,31 +116,43 @@ export const Navigation: React.FC = () => {
       <nav className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border-b border-zinc-100 dark:border-zinc-800 sticky top-0 z-40 shadow-xs print:hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between gap-4">
-
-            {/* Left: Logo + Nav Dropdown (desktop) */}
+            {/* Left: Logo + Nav Dropdown + Active Event */}
             <div className="flex items-center gap-4 min-w-0">
-              {/* Logo */}
               <Link
                 href="/"
                 className="flex items-center gap-2 font-black text-base tracking-tight text-indigo-600 dark:text-indigo-400 shrink-0"
               >
-                <img src="/icone.png" alt="Logo" className="h-10 w-auto max-w-[90px] object-contain" />
+                <img
+                  src="/icone.png"
+                  alt="Logo"
+                  className="h-10 w-auto max-w-[90px] object-contain"
+                />
                 <span className="hidden sm:block">Lojinha Retiro</span>
               </Link>
 
-              {/* Desktop: Nav dropdown */}
+              {/* Desktop: Navigation dropdown */}
               {isAdmin && (
                 <div className="hidden sm:block relative" ref={navDropRef}>
                   <button
-                    onClick={() => { setNavDropOpen(!navDropOpen); setUserDropOpen(false); }}
-                    className={`flex items-center gap-1.5 px-3.5 py-2 text-sm font-bold rounded-xl border transition-all cursor-pointer ${navDropOpen
+                    onClick={() => {
+                      setNavDropOpen(!navDropOpen);
+                      setUserDropOpen(false);
+                    }}
+                    className={`flex items-center gap-1.5 px-3.5 py-2 text-sm font-bold rounded-xl border transition-all cursor-pointer ${
+                      navDropOpen
                         ? "bg-indigo-50 border-indigo-200 text-indigo-600 dark:bg-indigo-950/40 dark:border-indigo-900/30 dark:text-indigo-400"
                         : "border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800"
-                      }`}
+                    }`}
                   >
                     {activeLink?.icon ?? <LayoutDashboard className="h-4 w-4" />}
-                    <span className="max-w-[120px] truncate">{activeLink?.name ?? "Navegar"}</span>
-                    <ChevronDown className={`h-3.5 w-3.5 transition-transform shrink-0 ${navDropOpen ? "rotate-180" : ""}`} />
+                    <span className="max-w-[120px] truncate">
+                      {activeLink?.name ?? "Navegar"}
+                    </span>
+                    <ChevronDown
+                      className={`h-3.5 w-3.5 transition-transform shrink-0 ${
+                        navDropOpen ? "rotate-180" : ""
+                      }`}
+                    />
                   </button>
 
                   {navDropOpen && (
@@ -241,14 +164,17 @@ export const Navigation: React.FC = () => {
                             key={link.href}
                             href={link.href}
                             onClick={() => setNavDropOpen(false)}
-                            className={`flex items-center gap-3 px-4 py-2.5 text-sm font-semibold transition-all ${isActive
+                            className={`flex items-center gap-3 px-4 py-2.5 text-sm font-semibold transition-all ${
+                              isActive
                                 ? "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400"
                                 : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800"
-                              }`}
+                            }`}
                           >
                             <span className="opacity-60">{link.icon}</span>
                             {link.name}
-                            {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-500" />}
+                            {isActive && (
+                              <span className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                            )}
                           </Link>
                         );
                       })}
@@ -257,30 +183,21 @@ export const Navigation: React.FC = () => {
                 </div>
               )}
 
-              {/* Active event pill — desktop */}
-              {activeEvent && (
-                <div className="hidden md:flex items-center gap-1.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/30 px-3 py-1.5 rounded-full text-xs font-bold text-amber-600 dark:text-amber-400 max-w-[180px] truncate">
-                  <Zap className="h-3 w-3 shrink-0" />
-                  <span className="truncate">{activeEvent.name}</span>
-                </div>
-              )}
+              <EventBadgeSelector activeEvent={activeEvent} />
             </div>
 
-            {/* Right: User dropdown (desktop) + Mobile hamburger */}
+            {/* Right Controls */}
             <div className="flex items-center gap-2">
-              
-              {/* Desktop Network Connection Config Toggle */}
+              {/* Settings Toggle */}
               <button
                 onClick={() => {
-                  setTestStatus("idle");
                   setShowConfigModal(true);
                   setThemeDropOpen(false);
                   setUserDropOpen(false);
-                  setNavDropOpen(false);
                 }}
                 className={`hidden sm:flex p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl border cursor-pointer items-center justify-center transition-all ${
-                  useLocalApi 
-                    ? "text-amber-500 border-amber-200 bg-amber-50/50 dark:border-amber-900/30 dark:bg-amber-955/10" 
+                  useLocalApi
+                    ? "text-amber-500 border-amber-200 bg-amber-50/50 dark:border-amber-900/30"
                     : "text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800"
                 }`}
                 title="Configurações de Rede (Contingência)"
@@ -288,10 +205,13 @@ export const Navigation: React.FC = () => {
                 <Settings className="h-4.5 w-4.5" />
               </button>
 
-              {/* Desktop Theme Switcher */}
+              {/* Theme Dropdown */}
               <div className="hidden sm:block relative" ref={themeDropRef}>
                 <button
-                  onClick={() => { setThemeDropOpen(!themeDropOpen); setUserDropOpen(false); setNavDropOpen(false); }}
+                  onClick={() => {
+                    setThemeDropOpen(!themeDropOpen);
+                    setUserDropOpen(false);
+                  }}
                   className="p-2 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-800 cursor-pointer flex items-center justify-center transition-all"
                   title="Alterar Tema"
                 >
@@ -304,409 +224,73 @@ export const Navigation: React.FC = () => {
                   <div className="absolute right-0 top-full mt-2 w-36 bg-white dark:bg-zinc-900 border border-zinc-150 dark:border-zinc-800 rounded-2xl shadow-xl overflow-hidden z-50 p-1">
                     <button
                       onClick={() => handleThemeChange("light")}
-                      className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                        theme === "light"
-                          ? "bg-indigo-50 dark:bg-indigo-950/20 text-indigo-650 dark:text-indigo-400"
-                          : "text-zinc-700 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
-                      }`}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer"
                     >
-                      <Sun className="h-3.5 w-3.5" />
-                      Claro
+                      <Sun className="h-3.5 w-3.5" /> Claro
                     </button>
                     <button
                       onClick={() => handleThemeChange("dark")}
-                      className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                        theme === "dark"
-                          ? "bg-indigo-50 dark:bg-indigo-950/20 text-indigo-650 dark:text-indigo-400"
-                          : "text-zinc-700 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
-                      }`}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer"
                     >
-                      <Moon className="h-3.5 w-3.5" />
-                      Escuro
+                      <Moon className="h-3.5 w-3.5" /> Escuro
                     </button>
                     <button
                       onClick={() => handleThemeChange("system")}
-                      className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                        theme === "system"
-                          ? "bg-indigo-50 dark:bg-indigo-950/20 text-indigo-650 dark:text-indigo-400"
-                          : "text-zinc-700 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
-                      }`}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer"
                     >
-                      <Monitor className="h-3.5 w-3.5" />
-                      Sistema
+                      <Monitor className="h-3.5 w-3.5" /> Sistema
                     </button>
                   </div>
                 )}
               </div>
-              {/* Desktop user area */}
-              {currentUser ? (
-                <div className="hidden sm:block relative" ref={userDropRef}>
-                  <button
-                    onClick={() => { setUserDropOpen(!userDropOpen); setNavDropOpen(false); }}
-                    className="flex items-center gap-2.5 px-3 py-1.5 bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 border border-zinc-200 dark:border-zinc-700 rounded-xl transition-all cursor-pointer"
-                  >
-                    <div className="w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
-                      <Shield className="h-3.5 w-3.5" />
-                    </div>
-                    <div className="text-left hidden md:block">
-                      <div className="text-xs font-bold text-zinc-800 dark:text-zinc-200 leading-tight">
-                        {currentUser.firstName}
-                      </div>
-                      <div className="text-[10px] uppercase font-extrabold text-indigo-500 leading-tight tracking-wider">
-                        {currentUser.role}
-                      </div>
-                    </div>
-                    <ChevronDown className={`h-3.5 w-3.5 text-zinc-400 transition-transform ${userDropOpen ? "rotate-180" : ""}`} />
-                  </button>
 
-                  {userDropOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl shadow-xl overflow-hidden z-50">
-                      {/* User info header */}
-                      <div className="px-4 py-3 border-b border-zinc-100 dark:border-zinc-800 space-y-0.5">
-                        <div className="text-xs text-zinc-400 font-medium">Conectado como</div>
-                        <div className="font-bold text-sm text-zinc-900 dark:text-white">
-                          {currentUser.firstName} {currentUser.lastName}
-                        </div>
-                        <div className="text-[10px] uppercase font-extrabold tracking-wider text-indigo-500">
-                          {currentUser.role}
-                        </div>
-                        {activeEvent && (
-                          <div className="mt-1.5 flex items-center gap-1.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/20 px-2 py-1 rounded-lg text-[10px] font-bold text-amber-600 dark:text-amber-400">
-                            <Zap className="h-2.5 w-2.5" />
-                            {activeEvent.name}
-                          </div>
-                        )}
-                      </div>
-                      {/* Logout */}
-                      <div className="p-2">
-                        <button
-                          onClick={() => { setUserDropOpen(false); handleLogout(); }}
-                          className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-all cursor-pointer"
-                        >
-                          <LogOut className="h-4 w-4" />
-                          Sair da conta
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <Link
-                  href="/login"
-                  className="hidden sm:flex items-center gap-1.5 px-4 py-2 text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md transition-all cursor-pointer"
-                >
-                  <LogIn className="h-4 w-4" />
-                  Acessar
-                </Link>
-              )}
+              {/* User Dropdown */}
+              <UserMenuDropdown
+                currentUser={currentUser}
+                activeEvent={activeEvent}
+                isOpen={userDropOpen}
+                setIsOpen={setUserDropOpen}
+                onLogout={handleLogout}
+                dropdownRef={userDropRef}
+              />
 
               {/* Mobile hamburger */}
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
                 className="sm:hidden p-2 rounded-xl text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
               >
-                {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                <Menu className="h-5 w-5" />
               </button>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Mobile Drawer */}
-      {mobileOpen && (
-        <>
-          {/* Backdrop */}
-          <div
-            className="sm:hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-40"
-            onClick={() => setMobileOpen(false)}
-          />
+      {/* Mobile Nav Drawer */}
+      <MobileNavDrawer
+        isOpen={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        currentUser={currentUser}
+        activeEvent={activeEvent}
+        pathname={pathname}
+        adminLinks={adminLinks}
+        theme={theme}
+        onThemeChange={handleThemeChange}
+        useLocalApi={useLocalApi}
+        onOpenConfigModal={() => setShowConfigModal(true)}
+        onLogout={handleLogout}
+      />
 
-          {/* Drawer */}
-          <div className="sm:hidden fixed top-0 left-0 h-full w-72 max-w-[85vw] bg-white dark:bg-zinc-900 z-50 flex flex-col shadow-2xl">
-            {/* Drawer header */}
-            <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-zinc-100 dark:border-zinc-800">
-              <Link
-                href="/"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-2 font-black text-base text-indigo-600 dark:text-indigo-400"
-              >
-                <img src="/icone.png" alt="Logo" className="h-8.5 w-auto max-w-[75px] object-contain" /> Lojinha Retiro
-              </Link>
-              <button
-                onClick={() => setMobileOpen(false)}
-                className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg text-zinc-400 cursor-pointer"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {/* Active event */}
-            {activeEvent && (
-              <div className="mx-4 mt-3 flex items-center gap-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/30 px-3 py-2.5 rounded-xl">
-                <Zap className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-                <div>
-                  <div className="text-[9px] font-extrabold uppercase tracking-wider text-amber-500">Evento Ativo</div>
-                  <div className="text-xs font-bold text-amber-700 dark:text-amber-300 truncate">{activeEvent.name}</div>
-                </div>
-              </div>
-            )}
-
-            {/* Navigation Links */}
-            <div className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5">
-              {isAdmin && adminLinks.map((link) => {
-                const isActive = pathname === link.href;
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setMobileOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${isActive
-                        ? "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400"
-                        : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-850"
-                      }`}
-                  >
-                    <span className={isActive ? "text-indigo-500" : "text-zinc-400"}>{link.icon}</span>
-                    {link.name}
-                    {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />}
-                  </Link>
-                );
-              })}
-
-              {!currentUser && (
-                <Link
-                  href="/login"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-center gap-2 w-full py-3 text-sm font-bold bg-indigo-600 text-white rounded-xl shadow-md mt-2"
-                >
-                  <LogIn className="h-4 w-4" />
-                  Acessar Painel
-                </Link>
-              )}
-            </div>
-
-            {/* Mobile Network Settings Toggle */}
-            <div className="px-5 py-4 border-t border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-950/20">
-              <span className="text-xs font-bold text-zinc-550 dark:text-zinc-400">Rede de Contingência</span>
-              <button
-                onClick={() => {
-                  setMobileOpen(false);
-                  setTestStatus("idle");
-                  setShowConfigModal(true);
-                }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all cursor-pointer ${
-                  useLocalApi
-                    ? "bg-amber-50 border-amber-200 text-amber-600 dark:bg-amber-950/20 dark:border-amber-900/30 dark:text-amber-455"
-                    : "bg-white border-zinc-200 text-zinc-650 dark:bg-zinc-850 dark:border-zinc-800 dark:text-zinc-300"
-                }`}
-              >
-                <Settings className="h-3.5 w-3.5" />
-                {useLocalApi ? "Local" : "Nuvem"}
-              </button>
-            </div>
-
-            {/* Theme switcher at bottom of drawer */}
-            <div className="px-5 py-4 border-t border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-950/20">
-              <span className="text-xs font-bold text-zinc-550 dark:text-zinc-400">Tema do Sistema</span>
-              <div className="flex gap-1 p-0.5 bg-zinc-100 dark:bg-zinc-850 border border-zinc-200/50 dark:border-zinc-800/80 rounded-xl">
-                <button
-                  onClick={() => handleThemeChange("light")}
-                  className={`p-1.5 rounded-lg transition-all cursor-pointer ${theme === "light" ? "bg-white dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 shadow-xs" : "text-zinc-400 hover:text-zinc-600"}`}
-                >
-                  <Sun className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={() => handleThemeChange("dark")}
-                  className={`p-1.5 rounded-lg transition-all cursor-pointer ${theme === "dark" ? "bg-white dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 shadow-xs" : "text-zinc-400 hover:text-zinc-600"}`}
-                >
-                  <Moon className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={() => handleThemeChange("system")}
-                  className={`p-1.5 rounded-lg transition-all cursor-pointer ${theme === "system" ? "bg-white dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 shadow-xs" : "text-zinc-400 hover:text-zinc-600"}`}
-                >
-                  <Monitor className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-
-            {/* User section at bottom */}
-            {currentUser && (
-              <div className="px-3 pb-5 pt-3 border-t border-zinc-100 dark:border-zinc-800 space-y-2">
-                <div className="flex items-center gap-3 px-4 py-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl">
-                  <div className="w-9 h-9 rounded-xl bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
-                    <Shield className="h-4 w-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-sm font-bold text-zinc-900 dark:text-white truncate">
-                      {currentUser.firstName} {currentUser.lastName}
-                    </div>
-                    <div className="text-[10px] uppercase font-extrabold text-indigo-500 tracking-wider">
-                      {currentUser.role}
-                    </div>
-                  </div>
-                </div>
-                <button
-                  onClick={() => { setMobileOpen(false); handleLogout(); }}
-                  className="w-full flex items-center justify-center gap-2 py-3 text-sm font-bold text-red-500 bg-red-50 dark:bg-red-950/20 rounded-xl cursor-pointer"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Sair da conta
-                </button>
-              </div>
-            )}
-          </div>
-        </>
-      )}
-
-      {/* Modal: Contingency Network Configurations (Global Navigation Modal) */}
+      {/* Network Contingency Modal */}
       {showConfigModal && (
-        <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-150 dark:border-zinc-800 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-6 animate-in fade-in zoom-in-95 duration-150 text-left">
-            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
-              <h3 className="font-extrabold text-lg text-zinc-900 dark:text-white flex items-center gap-2">
-                <Settings className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                Configurar Servidor Local
-              </h3>
-              <button
-                onClick={() => setShowConfigModal(false)}
-                className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors cursor-pointer"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <p className="text-xs text-zinc-500 leading-relaxed">
-                Caso a internet do retiro tenha caído, ative o redirecionamento abaixo para conectar os tablets ao notebook servidor da rede local.
-              </p>
-
-              {/* Switch for Redirect Toggle */}
-              <div className="flex items-center justify-between bg-zinc-50 dark:bg-zinc-850 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800/60">
-                <div className="flex flex-col">
-                  <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">Redirecionar para Servidor Local</span>
-                  <span className="text-[10px] text-zinc-450 dark:text-zinc-500 font-medium">Bater na API local do Notebook</span>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={useLocalApi}
-                    onChange={(e) => setUseLocalApi(e.target.checked)}
-                    className="sr-only peer"
-                    id="global-redirect-switch"
-                  />
-                  <div className="w-9 h-5 bg-zinc-200 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
-                </label>
-              </div>
-
-              {/* IP input */}
-              {useLocalApi && (
-                <div className="space-y-1.5 animate-in slide-in-from-top-2 duration-150">
-                  <label className="text-[10px] font-black uppercase text-zinc-450 dark:text-zinc-400 tracking-wider">URL do Servidor (IP e Porta do Notebook)</label>
-                  <input
-                    type="text"
-                    value={localApiUrl}
-                    onChange={(e) => setLocalApiUrl(e.target.value)}
-                    placeholder="ex: http://192.168.0.13:3001"
-                    className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-150 dark:border-zinc-800 focus:border-indigo-300 focus:ring-1 focus:ring-indigo-300 focus:outline-none text-sm rounded-xl text-zinc-900 dark:text-white"
-                  />
-                </div>
-              )}
-
-              {/* Test Connection Result */}
-              {useLocalApi && testStatus !== "idle" && (
-                <div className="text-xs font-bold transition-all animate-in fade-in duration-200">
-                  {testStatus === "testing" && (
-                    <span className="text-zinc-500 flex items-center gap-1.5">
-                      <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                      Testando conexão com o IP...
-                    </span>
-                  )}
-                  {testStatus === "success" && (
-                    <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                      <Wifi className="h-3.5 w-3.5" />
-                      Conectado com sucesso ao Notebook!
-                    </span>
-                  )}
-                  {testStatus === "error" && (
-                    <span className="text-red-600 dark:text-red-400 flex items-center gap-1.5">
-                      <WifiOff className="h-3.5 w-3.5" />
-                      Notebook não encontrado. Verifique se o backend está ligado e se o IP está correto.
-                    </span>
-                  )}
-                </div>
-              )}
-
-              {/* Sync Status Result */}
-              {useLocalApi && syncStatus !== "idle" && (
-                <div className="text-xs font-bold transition-all animate-in fade-in duration-200 mt-2">
-                  {syncStatus === "syncing" && (
-                    <span className="text-zinc-500 flex items-center gap-1.5">
-                      <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                      Sincronizando banco de dados local com a nuvem...
-                    </span>
-                  )}
-                  {syncStatus === "success" && (
-                    <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                      <Wifi className="h-3.5 w-3.5" />
-                      Banco de dados sincronizado com sucesso!
-                    </span>
-                  )}
-                  {syncStatus === "error" && (
-                    <span className="text-red-600 dark:text-red-400 flex items-center gap-1.5">
-                      <WifiOff className="h-3.5 w-3.5" />
-                      Falha ao sincronizar. Verifique a internet do notebook.
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Modal Footer Actions */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-zinc-100 dark:border-zinc-800 pt-4">
-              {useLocalApi ? (
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <button
-                    type="button"
-                    onClick={handleTestConfigConnection}
-                    disabled={testStatus === "testing"}
-                    className="px-3 py-2 bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-zinc-650 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 font-semibold text-xs rounded-xl transition-all cursor-pointer disabled:opacity-50"
-                  >
-                    Testar Conexão
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleTriggerSync}
-                    disabled={syncStatus === "syncing"}
-                    className="px-3 py-2 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/20 text-amber-600 dark:text-amber-455 border border-amber-100 dark:border-amber-900/30 font-semibold text-xs rounded-xl transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                    title="Forçar sincronização completa do banco local com a nuvem"
-                  >
-                    <RefreshCw className={`h-3 w-3 ${syncStatus === "syncing" ? "animate-spin" : ""}`} />
-                    {syncStatus === "syncing" ? "Sincronizando..." : "Sincronizar Banco"}
-                  </button>
-                </div>
-              ) : (
-                <div />
-              )}
-
-              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                <button
-                  type="button"
-                  onClick={() => setShowConfigModal(false)}
-                  className="px-4 py-2.5 bg-white hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-500 border border-zinc-200 dark:border-zinc-700 font-semibold text-xs rounded-xl transition-all cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveConfig}
-                  className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-md transition-all cursor-pointer"
-                >
-                  Salvar e Aplicar
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <NetworkConfigModal
+          isOpen={showConfigModal}
+          onClose={() => setShowConfigModal(false)}
+          useLocalApi={useLocalApi}
+          setUseLocalApi={setUseLocalApi}
+          localApiUrl={localApiUrl}
+          setLocalApiUrl={setLocalApiUrl}
+        />
       )}
     </>
   );
