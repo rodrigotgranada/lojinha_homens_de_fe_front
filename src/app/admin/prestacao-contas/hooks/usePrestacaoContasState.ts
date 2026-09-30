@@ -33,6 +33,8 @@ export const usePrestacaoContasState = (): PrestacaoContasContextType => {
 
     if (!authLoading && currentUser?.role === "ADMIN") {
       fetchEvents();
+    } else if (!authLoading) {
+      setLoading(false);
     }
   }, [authLoading, currentUser]);
 

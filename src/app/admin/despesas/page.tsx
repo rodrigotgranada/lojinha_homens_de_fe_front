@@ -9,6 +9,7 @@ import { DespesasHeader } from "./components/DespesasHeader";
 import { DespesasKpiCards } from "./components/DespesasKpiCards";
 import { DespesasTabs } from "./components/DespesasTabs";
 import { ObrasTab } from "./components/ObrasTab";
+
 import { IrmaosTab } from "./components/IrmaosTab";
 import { ReceitasTab } from "./components/ReceitasTab";
 import { RelatorioGeralTab } from "./components/RelatorioGeralTab";
@@ -30,6 +31,7 @@ function DespesasContent() {
 
       {/* Conteúdo da Aba Ativa */}
       {activeTab === "obras" && <ObrasTab />}
+
       {activeTab === "irmãos" && <IrmaosTab />}
       {activeTab === "receitas" && <ReceitasTab />}
       {activeTab === "relatorio" && <RelatorioGeralTab />}

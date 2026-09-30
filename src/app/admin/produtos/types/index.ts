@@ -26,10 +26,6 @@ export interface ProdutosContextType {
   setName: (val: string) => void;
   price: string;
   setPrice: (val: string) => void;
-  costPrice: string;
-  setCostPrice: (val: string) => void;
-  sponsorName: string;
-  setSponsorName: (val: string) => void;
   initialStock: string;
   setInitialStock: (val: string) => void;
   stock: string;

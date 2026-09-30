@@ -54,6 +54,9 @@ export const NewExpenseGroupModal: React.FC = () => {
               <option value="TRANSPORTE">🚗 Transporte & Combustível</option>
               <option value="OUTROS">📦 Outros Consumíveis & Limpeza</option>
             </optgroup>
+            <optgroup label="🛍️ Lojinha (Produtos para Venda)">
+              <option value="LOJINHA">🛍️ Compra de Produtos / Confecção Lojinha</option>
+            </optgroup>
           </select>
         </div>
 

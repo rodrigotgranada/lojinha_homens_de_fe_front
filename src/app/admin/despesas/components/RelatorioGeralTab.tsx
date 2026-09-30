@@ -30,10 +30,13 @@ export const RelatorioGeralTab: React.FC = () => {
   const lojinhaProf = summary.lojinhaProfit || 0;
   const totalFunds = summary.totalAvailableEventFunds || 0;
   const totalExpenses = summary.totalExpensesAmount || 0;
+  const storeInvestment = summary.totalStoreInvestment || 0;
+  const storeRepaid = summary.totalStoreRepaid || 0;
+  const storePending = summary.totalStorePendingRepay || 0;
   const finalBalance = summary.finalEventBalance || 0;
   const pendingRepay = summary.totalExpensesPendingRepay || 0;
   const totalRepaid = summary.totalExpensesRepaid || 0;
-  const immediateCash = summary.immediateCashAvailable ?? (totalIncomes + lojinhaRev - totalRepaid - (summary.totalStoreRepaid || 0));
+  const immediateCash = summary.immediateCashAvailable ?? (totalIncomes + lojinhaRev - totalRepaid - storeRepaid);
 
   return (
     <div className="space-y-6">
@@ -244,9 +247,9 @@ export const RelatorioGeralTab: React.FC = () => {
                       {formatMoney(p.balanceToRepay)}
                     </td>
                     <td className="py-3 px-3 text-center">
-                      {p.isFullyRepaid ? (
+                      {p.balanceToRepay === 0 ? (
                         <span className="bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-[10px] font-black px-2 py-0.5 rounded-full inline-flex items-center gap-1">
-                          <CheckCircle2 className="h-3 w-3" /> Quitado
+                          <CheckCircle2 className="h-3 w-3" /> {p.donationsCount > 0 && p.totalPaid === 0 ? "Doação (Sem Reembolso)" : "Quitado"}
                         </span>
                       ) : (
                         <span className="bg-amber-100 dark:bg-amber-955/40 text-amber-700 dark:text-amber-300 text-[10px] font-black px-2 py-0.5 rounded-full">
@@ -262,7 +265,7 @@ export const RelatorioGeralTab: React.FC = () => {
         )}
       </div>
 
-      {/* QUADRO 3: DISCRIMINAÇÃO DETALHADA DE TODAS AS ENTRADAS */}
+      {/* QUADRO 3: DISCRIMINAÇÃO DETALHADA DE TODAS AS ENTRADAS E SAÍDAS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* ENTRADAS DETALHADAS */}
         <div className="bg-white dark:bg-zinc-900 border border-zinc-150 dark:border-zinc-800 rounded-3xl p-6 shadow-sm space-y-4">
@@ -314,13 +317,37 @@ export const RelatorioGeralTab: React.FC = () => {
           <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
             <h4 className="text-sm font-black text-zinc-950 dark:text-white flex items-center gap-2">
               <Layers className="h-4 w-4 text-rose-500" />
-              3. Detalhamento das Despesas ({expensesList.length})
+              3. Detalhamento das Despesas ({expensesList.length + (storeInvestment > 0 ? 1 : 0)})
             </h4>
-            <span className="text-xs font-black text-rose-600">{formatMoney(totalExpenses)}</span>
+            <span className="text-xs font-black text-rose-600">
+              {formatMoney(totalExpenses + storeInvestment)}
+            </span>
           </div>
 
           <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
-            {expensesList.length === 0 ? (
+            {/* Linha da Lojinha se houver investimento a reembolsar de irmãos */}
+            {storeInvestment > 0 && (
+              <div className="p-3 rounded-2xl bg-amber-50/50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 flex items-center justify-between">
+                <div>
+                  <span className="font-bold text-xs text-amber-950 dark:text-amber-200 block flex items-center gap-1.5">
+                    🛍️ Produtos da Lojinha (Investimento de Irmãos)
+                  </span>
+                  <span className="text-[10px] text-zinc-500 font-semibold">
+                    Custo repassado conforme vendas: {formatMoney(storeRepaid)} · A devolver: {formatMoney(storePending)}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="font-black text-sm text-zinc-900 dark:text-white block">
+                    {formatMoney(storeInvestment)}
+                  </span>
+                  <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold">
+                    Pendente: {formatMoney(storePending)}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {expensesList.length === 0 && storeInvestment === 0 ? (
               <p className="text-xs text-zinc-400 italic py-4 text-center">Nenhuma despesa cadastrada.</p>
             ) : (
               expensesList.map((exp) => (

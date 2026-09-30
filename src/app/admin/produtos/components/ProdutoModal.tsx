@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { CpfSearchSelect } from "@/components/ui/CpfSearchSelect";
 import { QuickUserModal } from "@/components/QuickUserModal";
 import { ImageCropperModal } from "@/components/ImageCropperModal";
 import { Image as ImageIcon, Sparkles, X, ChevronDown, ShoppingCart, AlertTriangle, UserCheck } from "lucide-react";
@@ -22,10 +21,6 @@ export const ProdutoModal: React.FC = () => {
     setName,
     price,
     setPrice,
-    costPrice,
-    setCostPrice,
-    sponsorName,
-    setSponsorName,
     initialStock,
     setInitialStock,
     stock,
@@ -57,14 +52,8 @@ export const ProdutoModal: React.FC = () => {
   const [auditOpen, setAuditOpen] = useState(false);
   const [isQuickUserOpen, setIsQuickUserOpen] = useState(false);
   const [quickCpf, setQuickCpf] = useState("");
-  const [sponsorCpf, setSponsorCpf] = useState("");
 
-  // Real-time calculation of Unit Profit and Profit Margin for edit mode
   const priceNum = parseFloat((price || "").replace(/\./g, "").replace(",", ".")) || 0;
-  const costNum = parseFloat((costPrice || "").replace(/\./g, "").replace(",", ".")) || 0;
-  const unitProfit = priceNum - costNum;
-  const profitMarginPercent = priceNum > 0 ? ((unitProfit / priceNum) * 100).toFixed(1) : "0.0";
-  const totalProjectedProfit = unitProfit * (parseInt(stock || "0", 10) || 0);
 
   return (
     <>
@@ -118,34 +107,10 @@ export const ProdutoModal: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-[10px] uppercase font-extrabold text-zinc-400 tracking-wider">
-                    Preço de Custo
-                  </span>
-                  <p className="text-base font-black text-zinc-700 dark:text-zinc-300 mt-0.5">
-                    R$ {costPrice || "0,00"}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-[10px] uppercase font-extrabold text-zinc-400 tracking-wider">
-                    Lucro / Margem
-                  </span>
-                  <p className="text-base font-black text-indigo-600 dark:text-indigo-400 mt-0.5">
-                    R$ {unitProfit.toFixed(2).replace(".", ",")} ({profitMarginPercent}%)
-                  </p>
-                </div>
-                <div>
-                  <span className="text-[10px] uppercase font-extrabold text-zinc-400 tracking-wider">
                     Estoque Atual
                   </span>
                   <p className="text-base font-black text-zinc-900 dark:text-white mt-0.5">
                     {stock} unidades
-                  </p>
-                </div>
-                <div>
-                  <span className="text-[10px] uppercase font-extrabold text-zinc-400 tracking-wider">
-                    Investidor / Patrocinador
-                  </span>
-                  <p className="text-base font-black text-amber-600 dark:text-amber-400 mt-0.5">
-                    {sponsorName || "Retiro (Próprio)"}
                   </p>
                 </div>
                 <div>
@@ -257,7 +222,7 @@ export const ProdutoModal: React.FC = () => {
               />
 
               {/* Preços e Custos */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <Input
                   label="Preço de Venda (R$) *"
                   value={price}
@@ -266,68 +231,10 @@ export const ProdutoModal: React.FC = () => {
                   type="text"
                   required
                 />
-                <Input
-                  label="Preço de Custo Unitário (R$)"
-                  value={costPrice}
-                  onChange={(e) => setCostPrice(e.target.value)}
-                  placeholder="Ex: 40,00"
-                  type="text"
-                />
               </div>
 
-              {/* Card visual de Margem e Lucro em Tempo Real */}
-              <div className="bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/40 rounded-2xl p-3.5 flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] font-extrabold uppercase text-indigo-500 tracking-wider block">
-                    Lucro Líquido Unitário
-                  </span>
-                  <span className="text-base font-black text-indigo-700 dark:text-indigo-300">
-                    R$ {unitProfit >= 0 ? unitProfit.toFixed(2).replace(".", ",") : "0,00"}
-                  </span>
-                </div>
-                <div className="text-right">
-                  <span className="text-[10px] font-extrabold uppercase text-indigo-500 tracking-wider block">
-                    Margem de Lucro
-                  </span>
-                  <span className="text-base font-black text-emerald-600 dark:text-emerald-400">
-                    {profitMarginPercent}%
-                  </span>
-                </div>
-              </div>
-
-              {/* Investidor / Patrocinador & Estoque Inicial */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <CpfSearchSelect
-                    label="Investidor / Patrocinador"
-                    id="product-sponsor-select"
-                    placeholder="Digite CPF ou Nome do investidor..."
-                    value={sponsorCpf || sponsorName}
-                    onChange={(newVal, selectedUser) => {
-                      if (selectedUser) {
-                        setSponsorName(`${selectedUser.firstName} ${selectedUser.lastName}`);
-                        setSponsorCpf(selectedUser.cpf);
-                      } else {
-                        setSponsorName(newVal);
-                        setSponsorCpf(newVal);
-                      }
-                    }}
-                    onAddNewUser={(typedCpf) => {
-                      setQuickCpf(typedCpf);
-                      setIsQuickUserOpen(true);
-                    }}
-                  />
-                  {sponsorName && (
-                    <div className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl flex items-center justify-between text-xs">
-                      <span className="text-[10px] font-black uppercase text-emerald-700 dark:text-emerald-400">
-                        Investidor Selecionado:
-                      </span>
-                      <span className="font-bold text-zinc-900 dark:text-emerald-100">
-                        {sponsorName}
-                      </span>
-                    </div>
-                  )}
-                </div>
+              {/* Estoque Inicial */}
+              <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
 
                 <Input
                   label="Estoque Inicial Confeccionado"
@@ -542,17 +449,6 @@ export const ProdutoModal: React.FC = () => {
         onClose={() => setIsCropperOpen(false)}
         file={cropperFile}
         onCropComplete={handleCropComplete}
-      />
-
-      <QuickUserModal
-        isOpen={isQuickUserOpen}
-        onClose={() => setIsQuickUserOpen(false)}
-        cpf={quickCpf}
-        onSuccess={(newUser: User) => {
-          setIsQuickUserOpen(false);
-          setSponsorName(`${newUser.firstName} ${newUser.lastName}`);
-          setSponsorCpf(newUser.cpf);
-        }}
       />
     </>
   );

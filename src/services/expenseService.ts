@@ -32,7 +32,11 @@ export const expenseService = {
 
   addExpenseItem: async (
     expenseId: string,
-    item: Omit<ExpenseItem, "id" | "_id" | "repaymentHistory"> & { operatorName?: string }
+    item: Omit<ExpenseItem, "id" | "_id" | "repaymentHistory" | "status" | "repaidAmount"> & {
+      status?: "PENDENTE" | "REEMBOLSADO_PARCIAL" | "REEMBOLSADO" | "DOACAO";
+      repaidAmount?: number;
+      operatorName?: string;
+    }
   ): Promise<Expense> => {
     return apiFetch<Expense>(`/expenses/${expenseId}/items`, {
       method: "POST",

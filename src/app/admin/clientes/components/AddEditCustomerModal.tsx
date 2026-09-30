@@ -129,7 +129,7 @@ export const AddEditCustomerModal = () => {
         cpf: cleanCpf,
         phone: phone.trim(),
         email: email.trim() || undefined,
-        role: role as any
+        role: role as "USER" | "ADMIN"
       });
       handleClose();
     } catch (err: any) {

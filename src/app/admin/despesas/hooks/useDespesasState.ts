@@ -218,8 +218,6 @@ export const useDespesasState = (): DespesasContextType => {
         paidBy: itemPaidBy.trim(),
         payerPhone: itemPayerPhone.trim(),
         isDonation: itemIsDonation,
-        status: itemIsDonation ? "DOACAO" : "PENDENTE",
-        repaidAmount: 0,
         receiptUrl: itemReceiptUrl,
         notes: itemNotes.trim(),
         operatorName: currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : "Admin",
@@ -277,24 +275,34 @@ export const useDespesasState = (): DespesasContextType => {
     setRepayItemDescription(item.description);
     setRepayPayer(item.paidBy);
     setRepayTotalAmount(item.amount);
-    setRepayCurrentValue((item.amount - item.repaidAmount).toFixed(2).replace(".", ","));
+    // Inicia o campo limpo para o usuário digitar a parcela a pagar, mostrando placeholder do saldo pendente
+    setRepayCurrentValue("");
     setIsRepayModalOpen(true);
   };
 
-  const handleSaveRepayment = async (e: React.FormEvent) => {
+  const handleSaveRepayment = async (e: React.FormEvent, method = "PIX", notes = "") => {
     e.preventDefault();
     if (!repayExpenseId || !repayItemId) return;
     setSaving(true);
     try {
       const cleanRepay = parseFloat(repayCurrentValue.replace(/\./g, "").replace(",", ".")) || 0;
-      await api.updateExpenseItem(repayExpenseId, repayItemId, {
-        repaidAmount: cleanRepay,
+      if (cleanRepay <= 0) {
+        alert("Informe um valor válido maior que zero.");
+        return;
+      }
+
+      await api.addRepayment(repayExpenseId, repayItemId, {
+        amount: cleanRepay,
+        method,
+        notes,
         operatorName: currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : "Admin",
       });
       setIsRepayModalOpen(false);
+      setRepayCurrentValue("");
       loadFinancialData();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Erro ao registrar reembolso:", err);
+      alert(err.message || "Erro ao registrar reembolso.");
     } finally {
       setSaving(false);
     }
@@ -354,6 +362,7 @@ export const useDespesasState = (): DespesasContextType => {
   const expensesList = summaryData?.expenses || [];
   const incomesList = summaryData?.incomes || [];
   const payersReport = summaryData?.payersReport || [];
+  const storeProductsList = (summaryData as any)?.storeProductsReport || [];
 
   const filteredExpenses = expensesList.filter((exp) => {
     if (natureFilter === "ALL") return true;
@@ -378,6 +387,7 @@ export const useDespesasState = (): DespesasContextType => {
     filteredExpenses,
     incomesList,
     payersReport,
+    storeProductsList,
     loadFinancialData,
     handlePrint,
     formatMoney,
