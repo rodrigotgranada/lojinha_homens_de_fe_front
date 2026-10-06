@@ -5,7 +5,6 @@ import { useLoginState } from "./hooks/useLoginState";
 import { LoginProvider } from "./context/LoginContext";
 import { LoginHeader } from "./components/LoginHeader";
 import { LoginForm } from "./components/LoginForm";
-import { LoginCredentialsAlert } from "./components/LoginCredentialsAlert";
 import { ShieldAlert } from "lucide-react";
 
 export default function LoginPage() {
@@ -29,9 +28,6 @@ export default function LoginPage() {
 
           {/* Form */}
           <LoginForm />
-
-          {/* Seed Alert */}
-          <LoginCredentialsAlert />
         </div>
       </div>
     </LoginProvider>
