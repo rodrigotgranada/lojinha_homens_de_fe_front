@@ -544,8 +544,8 @@ export const ProdutoModal: React.FC = () => {
         <QuickUserModal
           isOpen={isQuickUserOpen}
           onClose={() => setIsQuickUserOpen(false)}
-          initialCpf={quickCpf}
-          onUserCreated={(user: User) => {
+          cpf={quickCpf}
+          onSuccess={(user: User) => {
             setSponsorCpf(user.cpf);
             setSponsorName(`${user.firstName} ${user.lastName}`);
             setSponsorPhone(user.phone || "");
