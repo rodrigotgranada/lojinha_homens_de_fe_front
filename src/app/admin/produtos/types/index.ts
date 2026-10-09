@@ -34,6 +34,16 @@ export interface ProdutosContextType {
   setMinStock: (val: string) => void;
   category: string;
   setCategory: (val: string) => void;
+  unitCost: string;
+  setUnitCost: (val: string) => void;
+  sponsorName: string;
+  setSponsorName: (val: string) => void;
+  sponsorCpf: string;
+  setSponsorCpf: (val: string) => void;
+  sponsorPhone: string;
+  setSponsorPhone: (val: string) => void;
+  isDonation: boolean;
+  setIsDonation: (val: boolean) => void;
   imageUrl: string;
   setImageUrl: (val: string) => void;
   productLogs: LogEntry[];

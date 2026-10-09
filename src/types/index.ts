@@ -44,6 +44,10 @@ export interface Product {
   minStock?: number;
   createdBy?: string;
   updatedBy?: string;
+  totalCost?: number;
+  sponsorCpf?: string;
+  sponsorPhone?: string;
+  isDonation?: boolean;
 }
 
 export interface SaleItem {

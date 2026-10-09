@@ -9,7 +9,7 @@ import { logService } from "@/services/logService";
 import { ActiveTab, ModalMode, ProdutosContextType, SortDir, SortField } from "../types";
 
 export const useProdutosState = (): ProdutosContextType => {
-  const { currentUser, isLoading } = useApp();
+  const { currentUser, isLoading, activeEvent } = useApp();
   const api = useApi();
 
   const [products, setProducts] = useState<Product[]>([]);
@@ -42,6 +42,14 @@ export const useProdutosState = (): ProdutosContextType => {
   const [imageUrl, setImageUrl] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  // Financial auto-expense fields
+  const [unitCost, setUnitCostState] = useState("");
+  const setUnitCost = (val: string) => setUnitCostState(formatCurrency(val));
+  const [sponsorName, setSponsorName] = useState("");
+  const [sponsorCpf, setSponsorCpf] = useState("");
+  const [sponsorPhone, setSponsorPhone] = useState("");
+  const [isDonation, setIsDonation] = useState(false);
 
   // Individual product log states
   const [productLogs, setProductLogs] = useState<LogEntry[]>([]);
@@ -218,6 +226,11 @@ export const useProdutosState = (): ProdutosContextType => {
     setImagePreview(null);
     setFormError("");
     setProductActive(true);
+    setUnitCostState("");
+    setSponsorName("");
+    setSponsorCpf("");
+    setSponsorPhone("");
+    setIsDonation(false);
     setModalMode("edit");
     setIsModalOpen(true);
   };
@@ -236,6 +249,14 @@ export const useProdutosState = (): ProdutosContextType => {
     setImagePreview(product.imageUrl || null);
     setFormError("");
     setProductActive(product.active !== false);
+    const costUnit = product.totalCost && (product.initialStock || product.stock)
+      ? product.totalCost / (product.initialStock || product.stock || 1)
+      : 0;
+    setUnitCostState(costUnit > 0 ? costUnit.toFixed(2).replace(".", ",") : "");
+    setSponsorName(product.sponsorName || "");
+    setSponsorCpf(product.sponsorCpf || "");
+    setSponsorPhone(product.sponsorPhone || "");
+    setIsDonation(product.isDonation || false);
     setModalMode("edit");
     setIsModalOpen(true);
   };
@@ -342,7 +363,12 @@ export const useProdutosState = (): ProdutosContextType => {
           imageUrl: finalImageUrl,
           category: category as any,
           minStock: minStockNum,
-          updatedBy: currentUser?.id
+          updatedBy: currentUser?.id,
+          totalCost: (parseFloat(unitCost.replace(/\./g, "").replace(",", ".")) || 0) * initialStockNum,
+          sponsorName,
+          sponsorCpf,
+          sponsorPhone,
+          isDonation
         });
 
         // Clean up old image if changed
@@ -389,6 +415,9 @@ export const useProdutosState = (): ProdutosContextType => {
         );
       } else {
         // Create product first
+        const unitCostNum = parseFloat(unitCost.replace(/\./g, "").replace(",", ".")) || 0;
+        const totalCostNum = unitCostNum * initialStockNum;
+        
         const created = await productService.createProduct({
           name: name.trim(),
           price: priceNum,
@@ -399,7 +428,13 @@ export const useProdutosState = (): ProdutosContextType => {
           category: category as any,
           minStock: minStockNum,
           createdBy: currentUser?.id,
-          updatedBy: currentUser?.id
+          updatedBy: currentUser?.id,
+          totalCost: totalCostNum,
+          sponsorName,
+          sponsorCpf,
+          sponsorPhone,
+          isDonation,
+          eventId: activeEvent?.id
         });
 
         let savedProduct = created;
@@ -578,5 +613,15 @@ export const useProdutosState = (): ProdutosContextType => {
     handleSubmit,
     categories,
     loadProducts: fetchProducts,
+    unitCost,
+    setUnitCost,
+    sponsorName,
+    setSponsorName,
+    sponsorCpf,
+    setSponsorCpf,
+    sponsorPhone,
+    setSponsorPhone,
+    isDonation,
+    setIsDonation
   };
 };

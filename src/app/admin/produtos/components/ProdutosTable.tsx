@@ -111,7 +111,9 @@ export const ProdutosTable: React.FC = () => {
             {activeProducts.map((product) => {
               const isLow = product.stock <= (product.minStock ?? 5);
               const isOut = product.stock === 0;
-              const cost = product.costPrice ?? 0;
+              const cost = product.totalCost && (product.initialStock || product.stock) 
+                ? product.totalCost / (product.initialStock || product.stock || 1) 
+                : (product.costPrice ?? 0);
               const unitProfit = product.price - cost;
               const margin = product.price > 0 ? ((unitProfit / product.price) * 100).toFixed(0) : "0";
 
