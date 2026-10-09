@@ -159,6 +159,7 @@ export const CpfSearchSelect: React.FC<CpfSearchSelectProps> = ({
 
         <input
           id={id}
+          name={`search-cpf-${Math.random()}`}
           type="text"
           value={inputValue}
           onChange={handleInputChange}
@@ -166,7 +167,11 @@ export const CpfSearchSelect: React.FC<CpfSearchSelectProps> = ({
           placeholder={placeholder}
           disabled={disabled}
           autoFocus={autoFocus}
-          autoComplete="off"
+          autoComplete="nope"
+          autoCorrect="off"
+          autoCapitalize="none"
+          spellCheck="false"
+          data-form-type="other"
           className="w-full pl-11 pr-10 py-3 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-semibold text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all disabled:opacity-50"
         />
 
