@@ -12,6 +12,8 @@ import {
   Sun,
   Moon,
   Monitor,
+  Maximize,
+  Minimize
 } from "lucide-react";
 import { adminLinks } from "./navigation/navLinks";
 import { EventBadgeSelector } from "./navigation/EventBadgeSelector";
@@ -30,6 +32,26 @@ export const Navigation: React.FC = () => {
   const [themeDropOpen, setThemeDropOpen] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark" | "system">("system");
   const [mounted, setMounted] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Sync fullscreen state if changed outside
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(e => console.error(e));
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  };
 
   // Network contingency configurations
   const [showConfigModal, setShowConfigModal] = useState(false);
@@ -188,6 +210,15 @@ export const Navigation: React.FC = () => {
 
             {/* Right Controls */}
             <div className="flex items-center gap-2">
+              {/* Fullscreen Toggle */}
+              <button
+                onClick={toggleFullscreen}
+                className="p-2 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-800 cursor-pointer flex items-center justify-center transition-all"
+                title={isFullscreen ? "Sair da Tela Cheia" : "Tela Cheia"}
+              >
+                {isFullscreen ? <Minimize className="h-4.5 w-4.5" /> : <Maximize className="h-4.5 w-4.5" />}
+              </button>
+
               {/* Settings Toggle */}
               <button
                 onClick={() => {
