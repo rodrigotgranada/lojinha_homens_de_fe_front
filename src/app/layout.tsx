@@ -22,6 +22,12 @@ export const metadata: Metadata = {
     icon: "/ChromeIcon.png",
     shortcut: "/ChromeIcon.png",
   },
+  manifest: "/manifest.json",
+  appleWebApp: {
+    title: "Lojinha Retiros",
+    statusBarStyle: "black-translucent",
+    capable: true,
+  },
 };
 
 export default function RootLayout({

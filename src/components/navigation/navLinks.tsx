@@ -11,6 +11,7 @@ import {
   User,
   Activity,
   Settings,
+  PieChart,
 } from "lucide-react";
 
 export interface NavLinkItem {
@@ -21,6 +22,7 @@ export interface NavLinkItem {
 
 export const adminLinks: NavLinkItem[] = [
   { name: "Painel", href: "/admin", icon: <LayoutDashboard className="h-4 w-4" /> },
+  { name: "Resumo Diretoria", href: "/admin/diretoria", icon: <PieChart className="h-4 w-4" /> },
   { name: "PDV", href: "/admin/pdv", icon: <Store className="h-4 w-4" /> },
   { name: "Estoque", href: "/admin/produtos", icon: <Boxes className="h-4 w-4" /> },
   { name: "Despesas & Obras", href: "/admin/despesas", icon: <Wrench className="h-4 w-4" /> },

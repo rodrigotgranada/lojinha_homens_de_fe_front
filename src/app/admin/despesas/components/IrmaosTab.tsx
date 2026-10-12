@@ -47,12 +47,17 @@ export const IrmaosTab: React.FC = () => {
                   <div>
                     <h4 className="font-extrabold text-zinc-900 dark:text-white text-base flex items-center gap-2">
                       {payer.payerName}
-                      {payer.isFullyRepaid && (
+                      {payer.donationsCount > 0 && payer.totalPaid === 0 ? (
+                        <span className="bg-pink-100 dark:bg-pink-950/40 text-pink-700 dark:text-pink-300 text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <CheckCircle2 className="h-3 w-3" />
+                          Doação (Sem Reembolso)
+                        </span>
+                      ) : payer.isFullyRepaid ? (
                         <span className="bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-1">
                           <CheckCircle2 className="h-3 w-3" />
                           Quitado
                         </span>
-                      )}
+                      ) : null}
                     </h4>
                     <span className="text-[11px] text-zinc-400">{payer.items.length} item(ns) vinculados</span>
                   </div>
@@ -61,20 +66,25 @@ export const IrmaosTab: React.FC = () => {
                 <div className="text-right">
                   <span className="text-[10px] uppercase font-bold text-zinc-400 block">Saldo a Devolver</span>
                   <span className={`text-base font-black ${payer.balanceToRepay > 0 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400"}`}>
-                    {formatMoney(payer.balanceToRepay)}
+                    {payer.donationsCount > 0 && payer.totalPaid === 0 ? "R$ 0,00" : formatMoney(payer.balanceToRepay)}
                   </span>
                 </div>
               </div>
 
-              {/* Lista dos Itens que ele pagou com Tag de Infra vs Operacional */}
+              {/* Lista dos Itens que ele pagou com Tag de Infra vs Operacional vs Lojinha */}
               <div className="space-y-1.5 border-t border-zinc-100 dark:border-zinc-800/80 pt-3">
                 {payer.items.map((it, itIdx) => (
                   <div key={itIdx} className="flex items-center justify-between text-xs">
                     <span className="text-zinc-600 dark:text-zinc-400 truncate max-w-[220px]">
-                      {it.nature === "INFRAESTRUTURA" ? "🏗️" : "🍽️"} {it.description} <span className="text-[10px] text-zinc-400">({it.expenseTitle})</span>
+                      {it.nature === "LOJINHA_INVESTIMENTO" || it.nature === "LOJINHA_DOACAO"
+                        ? "🛍️"
+                        : it.nature === "INFRAESTRUTURA"
+                        ? "🏗️"
+                        : "🍽️"}{" "}
+                      {it.description} <span className="text-[10px] text-zinc-400">({it.expenseTitle})</span>
                     </span>
                     <span className="font-bold text-zinc-900 dark:text-white shrink-0">
-                      {it.isDonation ? <span className="text-pink-600">Doação</span> : formatMoney(it.amount)}
+                      {it.isDonation ? <span className="text-pink-600 font-extrabold">Doação</span> : formatMoney(it.amount)}
                     </span>
                   </div>
                 ))}

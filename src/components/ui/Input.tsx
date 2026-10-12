@@ -4,10 +4,11 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   icon?: React.ReactNode;
+  rightElement?: React.ReactNode;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, icon, className = "", id, ...props }, ref) => {
+  ({ label, error, icon, rightElement, className = "", id, ...props }, ref) => {
     return (
       <div className="w-full flex flex-col gap-1.5">
         {label && (
@@ -33,9 +34,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                 : "border-zinc-200 dark:border-zinc-700 focus:border-indigo-500 focus:ring-indigo-500/20"
             } rounded-xl px-4 py-3 text-base text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-4 transition-all duration-200 ${
               icon ? "pl-11" : ""
-            } ${className}`}
+            } ${rightElement ? "pr-12" : ""} ${className}`}
             {...props}
           />
+          {rightElement && (
+            <div className="absolute right-3 flex items-center justify-center">
+              {rightElement}
+            </div>
+          )}
         </div>
         {error && <span className="text-sm text-red-500 font-medium">{error}</span>}
       </div>

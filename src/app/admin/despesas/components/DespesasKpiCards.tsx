@@ -51,7 +51,7 @@ export const DespesasKpiCards: React.FC = () => {
           <div>
             <p className="text-[10px] font-black text-amber-700 dark:text-amber-400 uppercase tracking-wider">A Reembolsar</p>
             <h3 className="text-xl font-black text-amber-800 dark:text-amber-300 mt-1">
-              {formatMoney(summary.totalExpensesPendingRepay)}
+              {formatMoney((summary.totalExpensesPendingRepay || 0))}
             </h3>
           </div>
           <div className="p-2.5 bg-amber-500 text-white rounded-2xl shadow-sm shadow-amber-500/20">
@@ -59,7 +59,7 @@ export const DespesasKpiCards: React.FC = () => {
           </div>
         </div>
         <span className="text-[11px] text-amber-700/80 dark:text-amber-400/80 mt-2 font-semibold">
-          {formatMoney(summary.totalExpensesRepaid)} já devolvidos
+          {formatMoney((summary.totalExpensesRepaid || 0))} já devolvidos
         </span>
       </div>
 

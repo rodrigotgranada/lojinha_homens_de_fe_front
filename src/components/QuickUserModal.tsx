@@ -104,23 +104,15 @@ export const QuickUserModal: React.FC<QuickUserModalProps> = ({
         createdBy: currentUser?.id,
       });
 
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("user_added", { detail: newUser }));
+      }
+
       onSuccess(newUser);
       onClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to register customer", err);
-      // Fallback local registry if server is down
-      const fallbackUser: User = {
-        id: `usr-${Date.now()}`,
-        cpf: cpf.replace(/\D/g, ""),
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        phone: phone.trim(),
-        role: "USER",
-        email: email.trim() || undefined,
-        createdBy: currentUser?.id,
-      };
-      onSuccess(fallbackUser);
-      onClose();
+      setError(err.message || "Erro ao tentar cadastrar o cliente. Verifique a conexão com o servidor.");
     } finally {
       setLoading(false);
     }

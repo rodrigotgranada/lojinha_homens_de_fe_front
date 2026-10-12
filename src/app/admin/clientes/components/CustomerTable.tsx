@@ -160,11 +160,12 @@ export const CustomerTable = () => {
               ) : (
                 filteredCustomers.map((customer) => {
                   const fullName = `${customer.firstName} ${customer.lastName}`;
+                  const hasPending = (customer as any).hasPending;
 
                   return (
-                    <tr key={customer.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-850/20 text-sm font-semibold text-zinc-800 dark:text-zinc-200 transition-all">
-                      <td className="py-4 px-6 font-bold text-zinc-900 dark:text-white">{fullName}</td>
-                      <td className="py-4 px-6 font-mono text-zinc-505 dark:text-zinc-400 text-xs">{formatCpf(customer.cpf)}</td>
+                    <tr key={customer.id} className={`hover:bg-zinc-50/50 dark:hover:bg-zinc-850/20 text-sm font-semibold transition-all border-l-4 ${hasPending ? "bg-amber-50 dark:bg-amber-500/15 border-amber-500" : "border-transparent text-zinc-800 dark:text-zinc-200"}`}>
+                      <td className={`py-4 px-6 font-bold ${hasPending ? "text-amber-900 dark:text-amber-400" : "text-zinc-900 dark:text-white"}`}>{fullName}</td>
+                      <td className={`py-4 px-6 font-mono text-xs ${hasPending ? "text-amber-700 dark:text-amber-500" : "text-zinc-505 dark:text-zinc-400"}`}>{formatCpf(customer.cpf)}</td>
                       <td className="py-4 px-6 text-zinc-550 dark:text-zinc-400">{formatPhone(customer.phone)}</td>
                       <td className="py-4 px-6 text-zinc-450 dark:text-zinc-500 text-xs truncate max-w-[180px]">
                         {customer.email || <span className="italic text-zinc-300 dark:text-zinc-700">Não informado</span>}

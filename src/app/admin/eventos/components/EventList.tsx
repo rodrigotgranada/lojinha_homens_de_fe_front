@@ -13,7 +13,9 @@ import {
 
 const formatDate = (dateStr?: string): string => {
   if (!dateStr) return "—";
-  const d = new Date(dateStr);
+  // Parse manual para evitar shift de fuso horário (UTC-3 voltando 1 dia ao ler "YYYY-MM-DD")
+  const [year, month, day] = dateStr.split("T")[0].split("-");
+  const d = new Date(Number(year), Number(month) - 1, Number(day), 12, 0, 0); // Define 12:00 local
   if (isNaN(d.getTime())) return "—";
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
 };

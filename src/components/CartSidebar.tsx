@@ -43,7 +43,7 @@ export const CartSidebar: React.FC = () => {
 
   return (
     <div className="bg-white dark:bg-zinc-900 border-l border-zinc-150 dark:border-zinc-800 p-6 flex flex-col h-full">
-      <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-4 mb-4">
+      <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-4 mb-4 shrink-0">
         <h3 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
           <ShoppingBag className="h-5 w-5 text-indigo-650 dark:text-indigo-400" />
           Carrinho de Vendas
@@ -51,6 +51,18 @@ export const CartSidebar: React.FC = () => {
         <span className="bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold px-2.5 py-1 rounded-full border border-indigo-100 dark:border-indigo-900/30">
           {cart.length} itens
         </span>
+      </div>
+
+      {/* Customer Selector at the top for better Tablet UX */}
+      <div className="mb-4 shrink-0 z-50">
+        <CartCustomerSelector
+          cpf={cpf}
+          setCpf={setCpf}
+          disabled={cart.length === 0}
+          onAddNewUser={(typedCpf) => {
+            setIsQuickModalOpen(true);
+          }}
+        />
       </div>
 
       {/* Cart Items List */}
@@ -73,15 +85,7 @@ export const CartSidebar: React.FC = () => {
           </div>
         )}
 
-        {/* Customer Selector */}
-        <CartCustomerSelector
-          cpf={cpf}
-          setCpf={setCpf}
-          disabled={cart.length === 0}
-          onAddNewUser={(typedCpf) => {
-            setIsQuickModalOpen(true);
-          }}
-        />
+        {/* Customer Selector was moved to the top for better Tablet UX */}
 
         {/* Payment and Totals Summary */}
         <CartPaymentSummary

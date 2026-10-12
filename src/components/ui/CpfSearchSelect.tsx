@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { User, useApi } from "@/hooks/useApi";
 import { Search, UserPlus, UserCheck, Check, X } from "lucide-react";
+import { normalizeString } from "@/utils/stringUtils";
 
 interface CpfSearchSelectProps {
   value: string;
@@ -60,6 +61,20 @@ export const CpfSearchSelect: React.FC<CpfSearchSelectProps> = ({
     return () => {
       isMounted = false;
     };
+  }, []);
+
+  // Escutar novos usuários cadastrados sem precisar recarregar a tela
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    
+    const handleUserAdded = (e: any) => {
+      if (e.detail) {
+        setUsers((prev) => [...prev, e.detail]);
+      }
+    };
+    
+    window.addEventListener("user_added", handleUserAdded);
+    return () => window.removeEventListener("user_added", handleUserAdded);
   }, []);
 
   // Fechar dropdown ao clicar fora
@@ -127,13 +142,13 @@ export const CpfSearchSelect: React.FC<CpfSearchSelectProps> = ({
   };
 
   // Filtragem
-  const cleanInput = inputValue.trim().toLowerCase();
-  const cleanDigits = cleanInput.replace(/\D/g, "");
+  const cleanInput = normalizeString(inputValue.trim());
+  const cleanDigits = inputValue.replace(/\D/g, "");
 
   const filteredUsers = users.filter((u) => {
     if (!cleanInput) return true;
     const userCpfClean = (u.cpf || "").replace(/\D/g, "");
-    const fullName = `${u.firstName || ""} ${u.lastName || ""}`.toLowerCase();
+    const fullName = normalizeString(`${u.firstName || ""} ${u.lastName || ""}`);
     
     const matchCpf = cleanDigits ? userCpfClean.includes(cleanDigits) : false;
     const matchName = fullName.includes(cleanInput);
@@ -159,6 +174,7 @@ export const CpfSearchSelect: React.FC<CpfSearchSelectProps> = ({
 
         <input
           id={id}
+          name={`search-cpf-${Math.random()}`}
           type="text"
           value={inputValue}
           onChange={handleInputChange}
@@ -166,7 +182,11 @@ export const CpfSearchSelect: React.FC<CpfSearchSelectProps> = ({
           placeholder={placeholder}
           disabled={disabled}
           autoFocus={autoFocus}
-          autoComplete="off"
+          autoComplete="nope"
+          autoCorrect="off"
+          autoCapitalize="none"
+          spellCheck="false"
+          data-form-type="other"
           className="w-full pl-11 pr-10 py-3 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-semibold text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all disabled:opacity-50"
         />
 

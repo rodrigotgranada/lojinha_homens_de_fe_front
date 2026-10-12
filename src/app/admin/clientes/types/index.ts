@@ -21,7 +21,7 @@ export interface CustomerContextProps {
   setIsAddEditModalOpen: (open: boolean) => void;
   customerToEdit: User | null;
   setCustomerToEdit: (customer: User | null) => void;
-  saveCustomer: (data: any) => Promise<void>;
+  saveCustomer: (data: Partial<User>) => Promise<void>;
   
   // Sorting and Tabs additions
   activeTab: "active" | "inactive";
@@ -30,4 +30,12 @@ export interface CustomerContextProps {
   sortDirection: "asc" | "desc";
   handleSort: (field: string) => void;
   toggleCustomerStatus: (customer: User) => Promise<void>;
+
+  // Debt Settlement additions
+  pendingBalance: number;
+  pendingCount: number;
+  paySale: (saleId: string) => Promise<void>;
+  payAllSales: () => Promise<void>;
+  payingSaleId: string | null;
+  payingAll: boolean;
 }

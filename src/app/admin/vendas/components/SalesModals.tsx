@@ -106,7 +106,7 @@ export const SalesModals = () => {
               </div>
               <h3 className="text-xl font-black text-zinc-950 dark:text-white">Marcar como Pago?</h3>
               <p className="text-zinc-500 dark:text-zinc-400 text-sm">
-                Confirme se o pagamento desta conta pendente/ficha foi devidamente recebido em dinheiro ou cartão. O caixa do evento será atualizado.
+                Confirme se o pagamento desta conta pendente/ficha foi devidamente recebido em dinheiro ou PIX. O caixa do evento será atualizado.
               </p>
             </div>
 

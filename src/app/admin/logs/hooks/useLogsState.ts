@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useApp } from "@/context/AppContext";
 import { LogEntry, Event, useApi } from "@/hooks/useApi";
+import { normalizeString } from "@/utils/stringUtils";
 import { logService } from "@/services/logService";
 import { LogsContextType, LogSortField, LogSortDir } from "../types";
 
@@ -70,12 +71,12 @@ export const useLogsState = (): LogsContextType => {
 
     // Search filter
     if (searchTerm.trim() !== "") {
-      const term = searchTerm.toLowerCase();
+      const term = normalizeString(searchTerm.trim());
       result = result.filter(
         (log) =>
-          log.description.toLowerCase().includes(term) ||
-          log.userName.toLowerCase().includes(term) ||
-          log.action.toLowerCase().includes(term)
+          normalizeString(log.description).includes(term) ||
+          normalizeString(log.userName).includes(term) ||
+          normalizeString(log.action).includes(term)
       );
     }
 

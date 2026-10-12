@@ -3,6 +3,23 @@ import { Event, Expense, ExpenseItem, EventIncome, EventFinancialSummary, User, 
 export type DespesasTab = "obras" | "irmãos" | "receitas" | "relatorio";
 export type NatureFilter = "ALL" | "INFRAESTRUTURA" | "OPERACIONAL";
 
+export interface StoreProductReportItem {
+  id: string;
+  name: string;
+  category: string;
+  sponsorName: string;
+  isDonation: boolean;
+  initialStock: number;
+  currentStock: number;
+  soldQty: number;
+  costPrice: number;
+  salePrice: number;
+  investedAmount: number;
+  repaidAmount: number;
+  balanceToRepay: number;
+  status: "DOACAO" | "PENDENTE" | "REEMBOLSADO_PARCIAL" | "REEMBOLSADO";
+}
+
 export interface DespesasContextType {
   // Event & Global state
   events: Event[];
@@ -20,6 +37,7 @@ export interface DespesasContextType {
   filteredExpenses: Expense[];
   incomesList: EventIncome[];
   payersReport: PayerReportItem[];
+  storeProductsList: StoreProductReportItem[];
   loadFinancialData: () => Promise<void>;
   handlePrint: () => void;
   formatMoney: (val: number) => string;
@@ -94,7 +112,7 @@ export interface DespesasContextType {
   repayCurrentValue: string;
   setRepayCurrentValue: (val: string) => void;
   handleOpenRepayModal: (expenseId: string, item: ExpenseItem) => void;
-  handleSaveRepayment: (e: React.FormEvent) => Promise<void>;
+  handleSaveRepayment: (e: React.FormEvent, method?: string, notes?: string) => Promise<void>;
 
   // Quick User Modal
   isQuickUserModalOpen: boolean;

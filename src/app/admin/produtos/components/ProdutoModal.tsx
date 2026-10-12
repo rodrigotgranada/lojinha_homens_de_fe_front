@@ -4,10 +4,10 @@ import React, { useState } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { CpfSearchSelect } from "@/components/ui/CpfSearchSelect";
 import { QuickUserModal } from "@/components/QuickUserModal";
 import { ImageCropperModal } from "@/components/ImageCropperModal";
-import { Image as ImageIcon, Sparkles, X, ChevronDown, ShoppingCart, AlertTriangle, UserCheck } from "lucide-react";
+import { CpfSearchSelect } from "@/components/ui/CpfSearchSelect";
+import { Image as ImageIcon, Sparkles, X, ChevronDown, ShoppingCart, AlertTriangle, UserCheck, HeartHandshake } from "lucide-react";
 import { useProdutos } from "../context/ProdutosContext";
 import { User } from "@/hooks/useApi";
 
@@ -22,10 +22,6 @@ export const ProdutoModal: React.FC = () => {
     setName,
     price,
     setPrice,
-    costPrice,
-    setCostPrice,
-    sponsorName,
-    setSponsorName,
     initialStock,
     setInitialStock,
     stock,
@@ -51,20 +47,24 @@ export const ProdutoModal: React.FC = () => {
     handleCropComplete,
     handleRemoveImage,
     handleSubmit,
-    categories
+    categories,
+    unitCost,
+    setUnitCost,
+    sponsorName,
+    setSponsorName,
+    sponsorCpf,
+    setSponsorCpf,
+    sponsorPhone,
+    setSponsorPhone,
+    isDonation,
+    setIsDonation
   } = useProdutos();
 
   const [auditOpen, setAuditOpen] = useState(false);
   const [isQuickUserOpen, setIsQuickUserOpen] = useState(false);
   const [quickCpf, setQuickCpf] = useState("");
-  const [sponsorCpf, setSponsorCpf] = useState("");
 
-  // Real-time calculation of Unit Profit and Profit Margin for edit mode
   const priceNum = parseFloat((price || "").replace(/\./g, "").replace(",", ".")) || 0;
-  const costNum = parseFloat((costPrice || "").replace(/\./g, "").replace(",", ".")) || 0;
-  const unitProfit = priceNum - costNum;
-  const profitMarginPercent = priceNum > 0 ? ((unitProfit / priceNum) * 100).toFixed(1) : "0.0";
-  const totalProjectedProfit = unitProfit * (parseInt(stock || "0", 10) || 0);
 
   return (
     <>
@@ -118,34 +118,10 @@ export const ProdutoModal: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-[10px] uppercase font-extrabold text-zinc-400 tracking-wider">
-                    Preço de Custo
-                  </span>
-                  <p className="text-base font-black text-zinc-700 dark:text-zinc-300 mt-0.5">
-                    R$ {costPrice || "0,00"}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-[10px] uppercase font-extrabold text-zinc-400 tracking-wider">
-                    Lucro / Margem
-                  </span>
-                  <p className="text-base font-black text-indigo-600 dark:text-indigo-400 mt-0.5">
-                    R$ {unitProfit.toFixed(2).replace(".", ",")} ({profitMarginPercent}%)
-                  </p>
-                </div>
-                <div>
-                  <span className="text-[10px] uppercase font-extrabold text-zinc-400 tracking-wider">
                     Estoque Atual
                   </span>
                   <p className="text-base font-black text-zinc-900 dark:text-white mt-0.5">
                     {stock} unidades
-                  </p>
-                </div>
-                <div>
-                  <span className="text-[10px] uppercase font-extrabold text-zinc-400 tracking-wider">
-                    Investidor / Patrocinador
-                  </span>
-                  <p className="text-base font-black text-amber-600 dark:text-amber-400 mt-0.5">
-                    {sponsorName || "Retiro (Próprio)"}
                   </p>
                 </div>
                 <div>
@@ -257,7 +233,7 @@ export const ProdutoModal: React.FC = () => {
               />
 
               {/* Preços e Custos */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
                   label="Preço de Venda (R$) *"
                   value={price}
@@ -266,76 +242,96 @@ export const ProdutoModal: React.FC = () => {
                   type="text"
                   required
                 />
-                <Input
-                  label="Preço de Custo Unitário (R$)"
-                  value={costPrice}
-                  onChange={(e) => setCostPrice(e.target.value)}
-                  placeholder="Ex: 40,00"
-                  type="text"
-                />
+                  <div className="flex flex-col">
+                    <Input
+                      label="Custo Unitário (R$)"
+                      value={unitCost}
+                      onChange={(e) => setUnitCost(e.target.value)}
+                      placeholder="Ex: 36,50"
+                      type="text"
+                    />
+                  </div>
               </div>
 
-              {/* Card visual de Margem e Lucro em Tempo Real */}
-              <div className="bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/40 rounded-2xl p-3.5 flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] font-extrabold uppercase text-indigo-500 tracking-wider block">
-                    Lucro Líquido Unitário
+                <div className="flex flex-col gap-3 p-4 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30 rounded-xl">
+                  <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400 flex items-center gap-1.5">
+                    <HeartHandshake className="h-4 w-4" />
+                    Financiamento e Aporte
                   </span>
-                  <span className="text-base font-black text-indigo-700 dark:text-indigo-300">
-                    R$ {unitProfit >= 0 ? unitProfit.toFixed(2).replace(".", ",") : "0,00"}
-                  </span>
-                </div>
-                <div className="text-right">
-                  <span className="text-[10px] font-extrabold uppercase text-indigo-500 tracking-wider block">
-                    Margem de Lucro
-                  </span>
-                  <span className="text-base font-black text-emerald-600 dark:text-emerald-400">
-                    {profitMarginPercent}%
-                  </span>
-                </div>
-              </div>
+                  
+                  <div className="space-y-2 mt-1">
+                    <CpfSearchSelect
+                      label="Quem comprou / doou o lote? (CPF)"
+                      id="produto-sponsor-cpf"
+                      placeholder="Digite o CPF ou Nome do participante..."
+                      value={sponsorCpf}
+                      onChange={(newCpf, selectedUser) => {
+                        setSponsorCpf(newCpf);
+                        if (selectedUser) {
+                          setSponsorName(`${selectedUser.firstName} ${selectedUser.lastName}`);
+                          setSponsorPhone(selectedUser.phone || "");
+                        } else if (!newCpf) {
+                          setSponsorName("");
+                          setSponsorPhone("");
+                        }
+                      }}
+                      onAddNewUser={(typedCpf) => {
+                        setQuickCpf(typedCpf);
+                        setIsQuickUserOpen(true);
+                      }}
+                    />
+                    {sponsorName && (
+                      <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl flex items-center justify-between">
+                        <div>
+                          <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400 block">
+                            Investidor Identificado
+                          </span>
+                          <span className="text-sm font-black text-zinc-950 dark:text-emerald-100">
+                            {sponsorName}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
-              {/* Investidor / Patrocinador & Estoque Inicial */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <CpfSearchSelect
-                    label="Investidor / Patrocinador"
-                    id="product-sponsor-select"
-                    placeholder="Digite CPF ou Nome do investidor..."
-                    value={sponsorCpf || sponsorName}
-                    onChange={(newVal, selectedUser) => {
-                      if (selectedUser) {
-                        setSponsorName(`${selectedUser.firstName} ${selectedUser.lastName}`);
-                        setSponsorCpf(selectedUser.cpf);
-                      } else {
-                        setSponsorName(newVal);
-                        setSponsorCpf(newVal);
-                      }
-                    }}
-                    onAddNewUser={(typedCpf) => {
-                      setQuickCpf(typedCpf);
-                      setIsQuickUserOpen(true);
-                    }}
-                  />
-                  {sponsorName && (
-                    <div className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl flex items-center justify-between text-xs">
-                      <span className="text-[10px] font-black uppercase text-emerald-700 dark:text-emerald-400">
-                        Investidor Selecionado:
+                  <div className="flex items-center justify-between bg-white dark:bg-zinc-800/80 p-3 rounded-xl border border-zinc-200 dark:border-zinc-700/60 mt-1">
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">
+                        Este lote foi uma Doação?
                       </span>
-                      <span className="font-bold text-zinc-900 dark:text-emerald-100">
-                        {sponsorName}
+                      <span className="text-[10px] text-zinc-400">
+                        Se marcado, o custo será R$ 0,00 e não haverá reembolso.
                       </span>
                     </div>
-                  )}
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isDonation}
+                        onChange={(e) => setIsDonation(e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-10 h-5 bg-zinc-300 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-pink-600"></div>
+                    </label>
+                  </div>
                 </div>
 
-                <Input
-                  label="Estoque Inicial Confeccionado"
-                  value={initialStock}
-                  onChange={(e) => setInitialStock(e.target.value)}
-                  placeholder="Ex: 20"
-                  type="number"
-                />
+              {/* Estoque Inicial */}
+              <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
+
+                <div className="flex flex-col">
+                  <Input
+                    label="Estoque Inicial Confeccionado"
+                    value={initialStock}
+                    onChange={(e) => setInitialStock(e.target.value)}
+                    placeholder="Ex: 20"
+                    type="number"
+                  />
+                  {unitCost && (
+                    <span className="text-[10px] text-zinc-500 font-medium mt-1 ml-1">
+                      Custo Total Calculado: R$ {((parseFloat(unitCost.replace(/\./g, "").replace(",", ".")) || 0) * (parseInt(initialStock || stock, 10) || 0)).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -544,16 +540,19 @@ export const ProdutoModal: React.FC = () => {
         onCropComplete={handleCropComplete}
       />
 
-      <QuickUserModal
-        isOpen={isQuickUserOpen}
-        onClose={() => setIsQuickUserOpen(false)}
-        cpf={quickCpf}
-        onSuccess={(newUser: User) => {
-          setIsQuickUserOpen(false);
-          setSponsorName(`${newUser.firstName} ${newUser.lastName}`);
-          setSponsorCpf(newUser.cpf);
-        }}
-      />
+      {isQuickUserOpen && (
+        <QuickUserModal
+          isOpen={isQuickUserOpen}
+          onClose={() => setIsQuickUserOpen(false)}
+          cpf={quickCpf}
+          onSuccess={(user: User) => {
+            setSponsorCpf(user.cpf);
+            setSponsorName(`${user.firstName} ${user.lastName}`);
+            setSponsorPhone(user.phone || "");
+            setIsQuickUserOpen(false);
+          }}
+        />
+      )}
     </>
   );
 };

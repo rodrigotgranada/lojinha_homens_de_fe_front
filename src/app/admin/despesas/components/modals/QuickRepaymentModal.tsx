@@ -24,13 +24,19 @@ export const QuickRepaymentModal: React.FC = () => {
   const [paymentMethod, setPaymentMethod] = useState("PIX");
   const [repayNotes, setRepayNotes] = useState("");
 
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await handleSaveRepayment(e, paymentMethod, repayNotes);
+    setRepayNotes("");
+  };
+
   return (
     <Modal
       isOpen={isRepayModalOpen}
       onClose={() => setIsRepayModalOpen(false)}
       title="Registrar Reembolso / Parcela ao Irmão"
     >
-      <form onSubmit={handleSaveRepayment} className="flex flex-col gap-4">
+      <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <div className="bg-amber-50 dark:bg-amber-955/30 border border-amber-200 dark:border-amber-900/40 rounded-2xl p-4 space-y-1">
           <span className="text-[10px] uppercase font-black text-amber-600 dark:text-amber-400">
             Resumo da Despesa

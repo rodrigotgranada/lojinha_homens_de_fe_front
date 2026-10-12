@@ -26,10 +26,6 @@ export interface ProdutosContextType {
   setName: (val: string) => void;
   price: string;
   setPrice: (val: string) => void;
-  costPrice: string;
-  setCostPrice: (val: string) => void;
-  sponsorName: string;
-  setSponsorName: (val: string) => void;
   initialStock: string;
   setInitialStock: (val: string) => void;
   stock: string;
@@ -38,6 +34,16 @@ export interface ProdutosContextType {
   setMinStock: (val: string) => void;
   category: string;
   setCategory: (val: string) => void;
+  unitCost: string;
+  setUnitCost: (val: string) => void;
+  sponsorName: string;
+  setSponsorName: (val: string) => void;
+  sponsorCpf: string;
+  setSponsorCpf: (val: string) => void;
+  sponsorPhone: string;
+  setSponsorPhone: (val: string) => void;
+  isDonation: boolean;
+  setIsDonation: (val: boolean) => void;
   imageUrl: string;
   setImageUrl: (val: string) => void;
   productLogs: LogEntry[];
