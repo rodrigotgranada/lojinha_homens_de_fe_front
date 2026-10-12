@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useCustomers } from "../context/CustomerContext";
 import { Modal } from "@/components/ui/Modal";
-import { ShoppingBag, ChevronDown, ChevronUp, Clock, AlertCircle } from "lucide-react";
+import { ShoppingBag, ChevronDown, ChevronUp, Clock, AlertCircle, CheckCircle2, Check, Loader2 } from "lucide-react";
 import { Product } from "@/hooks/useApi";
 
 export const CustomerHistoryModal = () => {
@@ -13,7 +13,13 @@ export const CustomerHistoryModal = () => {
     customerSales,
     loadingSales,
     totalSpent,
-    formatCurrency
+    formatCurrency,
+    pendingBalance,
+    pendingCount,
+    paySale,
+    payAllSales,
+    payingSaleId,
+    payingAll
   } = useCustomers();
 
   const [expandedSaleId, setExpandedSaleId] = useState<string | null>(null);
@@ -28,6 +34,24 @@ export const CustomerHistoryModal = () => {
     setExpandedSaleId(null);
   };
 
+  const handlePayAll = async () => {
+    if (!selectedCustomer) return;
+    const confirm = window.confirm(
+      `Deseja quitar TODAS as ${pendingCount} pendência(s) de ${selectedCustomer.firstName} ${selectedCustomer.lastName} no valor total de ${formatCurrency(pendingBalance)}?`
+    );
+    if (confirm) {
+      await payAllSales();
+    }
+  };
+
+  const handlePayIndividual = async (e: React.MouseEvent, saleId: string, amount: number) => {
+    e.stopPropagation();
+    const confirm = window.confirm(`Deseja marcar esta compra no valor de ${formatCurrency(amount)} como PAGA?`);
+    if (confirm) {
+      await paySale(saleId);
+    }
+  };
+
   const activeSalesCount = customerSales.filter((s) => s.status !== "CANCELADO").length;
 
   return (
@@ -36,17 +60,68 @@ export const CustomerHistoryModal = () => {
       onClose={handleClose}
       title={`Histórico de Compras - ${selectedCustomer ? `${selectedCustomer.firstName} ${selectedCustomer.lastName}` : ""}`}
     >
-      <div className="space-y-6 max-h-[75vh] overflow-y-auto pr-1">
+      <div className="space-y-5 max-h-[75vh] overflow-y-auto pr-1">
         {selectedCustomer && (
-          <div className="bg-zinc-50 dark:bg-zinc-850/50 border border-zinc-150 dark:border-zinc-800 rounded-2xl p-4 grid grid-cols-2 gap-4 text-center">
-            <div>
-              <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Compras Efetuadas</p>
-              <h4 className="text-xl font-black text-zinc-950 dark:text-white mt-0.5">{activeSalesCount}</h4>
+          <div className="space-y-3">
+            <div className={`bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 grid ${pendingBalance > 0 ? "grid-cols-3" : "grid-cols-2"} gap-3 text-center shadow-xs`}>
+              <div>
+                <p className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Compras</p>
+                <h4 className="text-xl font-black text-zinc-900 dark:text-zinc-100 mt-1">{activeSalesCount}</h4>
+              </div>
+              <div>
+                <p className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Total Geral</p>
+                <h4 className="text-xl font-black text-zinc-900 dark:text-zinc-100 mt-1">{formatCurrency(totalSpent)}</h4>
+              </div>
+              {pendingBalance > 0 && (
+                <div>
+                  <p className="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Em Aberto</p>
+                  <h4 className="text-xl font-black text-amber-600 dark:text-amber-400 mt-1">{formatCurrency(pendingBalance)}</h4>
+                </div>
+              )}
             </div>
-            <div>
-              <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Total Acumulado</p>
-              <h4 className="text-xl font-black text-emerald-600 dark:text-emerald-450 mt-0.5">{formatCurrency(totalSpent)}</h4>
-            </div>
+
+            {/* Banner de Quitado quando não há pendências */}
+            {pendingBalance === 0 && activeSalesCount > 0 && (
+              <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center gap-2.5 text-emerald-700 dark:text-emerald-400">
+                <CheckCircle2 className="h-4 w-4 shrink-0" />
+                <span className="text-xs font-bold">Todas as compras deste cliente estão quitadas. Nenhuma pendência em aberto.</span>
+              </div>
+            )}
+
+            {/* Banner de Ação Rápida para Quitar Todas as Pendências */}
+            {pendingCount > 0 && (
+              <div className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0" />
+                  <div>
+                    <p className="text-xs font-black text-amber-900 dark:text-amber-200">
+                      {pendingCount} compra(s) pendente(s) ({formatCurrency(pendingBalance)})
+                    </p>
+                    <p className="text-[11px] text-amber-700/80 dark:text-amber-300/70">
+                      Você pode quitar tudo de uma só vez ou item a item abaixo.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handlePayAll}
+                  disabled={payingAll}
+                  className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-black rounded-xl shadow-sm transition-all disabled:opacity-50 cursor-pointer shrink-0"
+                >
+                  {payingAll ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Quitando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="h-4 w-4" />
+                      <span>Quitar Todas ({formatCurrency(pendingBalance)})</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -68,12 +143,16 @@ export const CustomerHistoryModal = () => {
             {customerSales.map((sale) => {
               const isExpanded = expandedSaleId === sale.id;
               const dateStr = new Date(sale.createdAt).toLocaleString("pt-BR");
+              const isPending = sale.status === "PENDENTE";
+              const isPayingThis = payingSaleId === sale.id;
 
               return (
                 <div
                   key={sale.id}
                   className={`border rounded-2xl overflow-hidden transition-all duration-200 ${
-                    isExpanded
+                    isPending
+                      ? "border-amber-300 dark:border-amber-700/60 bg-amber-50/20 dark:bg-amber-950/10"
+                      : isExpanded
                       ? "border-zinc-200 bg-zinc-50/20 dark:border-zinc-800"
                       : "border-zinc-100 dark:border-zinc-850 hover:bg-zinc-50/50"
                   }`}
@@ -81,26 +160,47 @@ export const CustomerHistoryModal = () => {
                   {/* Collapsible Header */}
                   <div
                     onClick={() => toggleExpand(sale.id)}
-                    className="p-4 flex items-center justify-between gap-4 cursor-pointer select-none"
+                    className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer select-none"
                   >
                     <div className="space-y-1">
-                      <p className="text-xs font-mono text-zinc-400">#{sale.id.slice(-8)}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-mono text-zinc-400">#{sale.id.slice(-8)}</p>
+                        <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full border uppercase tracking-wider ${
+                          sale.status === "PAGO"
+                            ? "bg-emerald-50 dark:bg-emerald-955/20 text-emerald-600 dark:text-emerald-450 border-emerald-100 dark:border-emerald-900/30"
+                            : sale.status === "PENDENTE"
+                            ? "bg-amber-50 dark:bg-amber-955/20 text-amber-600 dark:text-amber-450 border-amber-100 dark:border-amber-900/30"
+                            : "bg-rose-50 dark:bg-rose-955/20 text-rose-600 dark:text-rose-455 border-rose-100 dark:border-rose-900/30"
+                        }`}>
+                          {sale.status}
+                        </span>
+                      </div>
                       <p className="text-[10px] text-zinc-500 flex items-center gap-1.5">
                         <Clock className="h-3.5 w-3.5" /> {dateStr}
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full border uppercase tracking-wider ${
-                        sale.status === "PAGO"
-                          ? "bg-emerald-50 dark:bg-emerald-955/20 text-emerald-600 dark:text-emerald-450 border-emerald-100 dark:border-emerald-900/30"
-                          : sale.status === "PENDENTE"
-                          ? "bg-amber-50 dark:bg-amber-955/20 text-amber-600 dark:text-amber-450 border-amber-100 dark:border-amber-900/30"
-                          : "bg-rose-50 dark:bg-rose-955/20 text-rose-600 dark:text-rose-455 border-rose-100 dark:border-rose-900/30"
-                      }`}>
-                        {sale.status}
-                      </span>
-                      <p className="font-bold text-sm text-zinc-950 dark:text-white">{formatCurrency(sale.totalPrice)}</p>
+                    <div className="flex items-center justify-between sm:justify-end gap-3">
+                      <p className="font-black text-sm text-zinc-950 dark:text-white">{formatCurrency(sale.totalPrice)}</p>
+
+                      {/* Botão de Quitar Venda Específica */}
+                      {isPending && (
+                        <button
+                          type="button"
+                          onClick={(e) => handlePayIndividual(e, sale.id, sale.totalPrice)}
+                          disabled={isPayingThis || payingAll}
+                          title="Marcar esta pendência específica como PAGA"
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold rounded-lg transition-all shadow-xs disabled:opacity-50 cursor-pointer"
+                        >
+                          {isPayingThis ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Check className="h-3.5 w-3.5 stroke-[3]" />
+                          )}
+                          <span>Quitar</span>
+                        </button>
+                      )}
+
                       {isExpanded ? <ChevronUp className="h-4 w-4 text-zinc-400" /> : <ChevronDown className="h-4 w-4 text-zinc-400" />}
                     </div>
                   </div>

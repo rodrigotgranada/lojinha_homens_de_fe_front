@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { User, useApi } from "@/hooks/useApi";
 import { Search, UserPlus, UserCheck, Check, X } from "lucide-react";
+import { normalizeString } from "@/utils/stringUtils";
 
 interface CpfSearchSelectProps {
   value: string;
@@ -60,6 +61,20 @@ export const CpfSearchSelect: React.FC<CpfSearchSelectProps> = ({
     return () => {
       isMounted = false;
     };
+  }, []);
+
+  // Escutar novos usuários cadastrados sem precisar recarregar a tela
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    
+    const handleUserAdded = (e: any) => {
+      if (e.detail) {
+        setUsers((prev) => [...prev, e.detail]);
+      }
+    };
+    
+    window.addEventListener("user_added", handleUserAdded);
+    return () => window.removeEventListener("user_added", handleUserAdded);
   }, []);
 
   // Fechar dropdown ao clicar fora
@@ -127,13 +142,13 @@ export const CpfSearchSelect: React.FC<CpfSearchSelectProps> = ({
   };
 
   // Filtragem
-  const cleanInput = inputValue.trim().toLowerCase();
-  const cleanDigits = cleanInput.replace(/\D/g, "");
+  const cleanInput = normalizeString(inputValue.trim());
+  const cleanDigits = inputValue.replace(/\D/g, "");
 
   const filteredUsers = users.filter((u) => {
     if (!cleanInput) return true;
     const userCpfClean = (u.cpf || "").replace(/\D/g, "");
-    const fullName = `${u.firstName || ""} ${u.lastName || ""}`.toLowerCase();
+    const fullName = normalizeString(`${u.firstName || ""} ${u.lastName || ""}`);
     
     const matchCpf = cleanDigits ? userCpfClean.includes(cleanDigits) : false;
     const matchName = fullName.includes(cleanInput);

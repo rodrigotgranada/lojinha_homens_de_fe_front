@@ -84,7 +84,7 @@ export const RelatorioGeralTab: React.FC = () => {
           <span className="text-xs text-emerald-100 font-bold uppercase">Superávit Final Previsto</span>
           <span className="text-2xl font-black">{formatMoney(finalBalance)}</span>
           <span className="text-[10px] text-emerald-200">
-            (Após quitar todos os R$ {formatMoney(pendingRepay + (summary.totalStorePendingRepay || 0))} restantes)
+            (Após quitar todos os R$ {formatMoney(pendingRepay)} restantes)
           </span>
         </div>
       </div>
@@ -129,7 +129,7 @@ export const RelatorioGeralTab: React.FC = () => {
                 (-) Custos Gerais do Evento
               </span>
               <h4 className="text-2xl font-black text-rose-800 dark:text-rose-300 mt-1">
-                {formatMoney(totalExpenses + (summary.totalStoreInvestment || 0))}
+                {formatMoney(totalExpenses)}
               </h4>
             </div>
             <div className="p-2.5 bg-rose-500 text-white rounded-2xl shadow-xs">
@@ -150,8 +150,8 @@ export const RelatorioGeralTab: React.FC = () => {
               <strong className="text-amber-700 dark:text-amber-400">{formatMoney(summary.totalStoreInvestment || 0)}</strong>
             </div>
             <div className="flex justify-between text-[11px] pt-1 border-t border-rose-200/40 dark:border-rose-900/30">
-              <span>Já Devolvido: <strong className="text-emerald-600">{formatMoney(totalRepaid + (summary.totalStoreRepaid || 0))}</strong></span>
-              <span>Pendente: <strong className="text-amber-600">{formatMoney(pendingRepay + (summary.totalStorePendingRepay || 0))}</strong></span>
+              <span>Já Devolvido: <strong className="text-emerald-600">{formatMoney(totalRepaid)}</strong></span>
+              <span>Pendente: <strong className="text-amber-600">{formatMoney(pendingRepay)}</strong></span>
             </div>
           </div>
         </div>
@@ -202,7 +202,7 @@ export const RelatorioGeralTab: React.FC = () => {
           <div className="text-right">
             <span className="text-[10px] uppercase font-bold text-zinc-400 block">Total a Reembolsar</span>
             <span className="text-base font-black text-amber-600 dark:text-amber-400">
-              {formatMoney(pendingRepay + (summary.totalStorePendingRepay || 0))}
+              {formatMoney(pendingRepay)}
             </span>
           </div>
         </div>
@@ -317,10 +317,10 @@ export const RelatorioGeralTab: React.FC = () => {
           <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
             <h4 className="text-sm font-black text-zinc-950 dark:text-white flex items-center gap-2">
               <Layers className="h-4 w-4 text-rose-500" />
-              3. Detalhamento das Despesas ({expensesList.length + (storeInvestment > 0 ? 1 : 0)})
+              3. Detalhamento das Despesas ({expensesList.filter(exp => exp.category !== "LOJINHA" && exp.nature !== "LOJINHA_INVESTIMENTO" && exp.nature !== "LOJINHA_DOACAO").length + (storeInvestment > 0 ? 1 : 0)})
             </h4>
             <span className="text-xs font-black text-rose-600">
-              {formatMoney(totalExpenses + storeInvestment)}
+              {formatMoney(totalExpenses)}
             </span>
           </div>
 
@@ -350,7 +350,7 @@ export const RelatorioGeralTab: React.FC = () => {
             {expensesList.length === 0 && storeInvestment === 0 ? (
               <p className="text-xs text-zinc-400 italic py-4 text-center">Nenhuma despesa cadastrada.</p>
             ) : (
-              expensesList.map((exp) => (
+              expensesList.filter(exp => exp.category !== "LOJINHA" && exp.nature !== "LOJINHA_INVESTIMENTO" && exp.nature !== "LOJINHA_DOACAO").map((exp) => (
                 <div key={exp.id || exp._id} className="p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-150 dark:border-zinc-800 flex items-center justify-between">
                   <div>
                     <span className="font-bold text-xs text-zinc-900 dark:text-white block flex items-center gap-1.5">

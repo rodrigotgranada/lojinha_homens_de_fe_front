@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, ChangeEvent, FormEvent } from "react";
 import { useApp } from "@/context/AppContext";
 import { useApi, Product, LogEntry } from "@/hooks/useApi";
+import { normalizeString } from "@/utils/stringUtils";
 import { productService } from "@/services/productService";
 import { uploadService } from "@/services/uploadService";
 import { logService } from "@/services/logService";
@@ -96,11 +97,11 @@ export const useProdutosState = (): ProdutosContextType => {
     let result = list;
     // Search filter
     if (searchQuery.trim()) {
-      const q = searchQuery.trim().toLowerCase();
+      const q = normalizeString(searchQuery.trim());
       result = result.filter(
         (p) =>
-          p.name.toLowerCase().includes(q) ||
-          (p.category ?? "").toLowerCase().includes(q)
+          normalizeString(p.name).includes(q) ||
+          normalizeString(p.category ?? "").includes(q)
       );
     }
     // Sort

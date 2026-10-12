@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useApp } from "@/context/AppContext";
 import { useApi, Product } from "@/hooks/useApi";
+import { normalizeString } from "@/utils/stringUtils";
 
 export const usePdvState = () => {
   const { currentUser, cartCount, isLoading } = useApp();
@@ -102,7 +103,8 @@ export const usePdvState = () => {
 
   // Filter products by search and category
   const filteredProducts = products.filter((p) => {
-    const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
+    const q = normalizeString(search);
+    const matchesSearch = normalizeString(p.name).includes(q);
     const matchesCategory =
       selectedCategory === "Todos" ||
       p.category === selectedCategory;

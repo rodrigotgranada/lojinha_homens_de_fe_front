@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useApp } from "@/context/AppContext";
 import { useApi, User, SaleItem } from "@/hooks/useApi";
 import { logService } from "@/services/logService";
+import { broadcastCrossTabEvent } from "@/utils/crossTabSync";
 
 export const useCartCheckout = () => {
   const {
@@ -113,6 +114,9 @@ export const useCartCheckout = () => {
       clearCart();
       setCpf("");
       setIsPaid(true);
+
+      // Notifica todas as abas abertas (Vendas, Clientes, Diretoria) em tempo real
+      broadcastCrossTabEvent("SALES_UPDATED");
     } catch (err: any) {
       console.error("Error checking out", err);
       setError(err.message || "Ocorreu um erro ao processar a venda. Tente novamente.");
@@ -122,7 +126,9 @@ export const useCartCheckout = () => {
   };
 
   const handleQuickRegisterSuccess = (newUser: User) => {
-    handleCheckout(newUser);
+    setCpf(newUser.cpf);
+    setSuccess("Cliente cadastrado. Confira a forma de pagamento e conclua a venda.");
+    setIsQuickModalOpen(false);
   };
 
   const handleConfirmReactivate = async () => {

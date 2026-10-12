@@ -30,4 +30,12 @@ export interface CustomerContextProps {
   sortDirection: "asc" | "desc";
   handleSort: (field: string) => void;
   toggleCustomerStatus: (customer: User) => Promise<void>;
+
+  // Debt Settlement additions
+  pendingBalance: number;
+  pendingCount: number;
+  paySale: (saleId: string) => Promise<void>;
+  payAllSales: () => Promise<void>;
+  payingSaleId: string | null;
+  payingAll: boolean;
 }

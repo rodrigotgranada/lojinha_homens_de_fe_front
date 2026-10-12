@@ -100,7 +100,7 @@ export interface Expense {
   eventId: string;
   title: string;
   category: string;
-  nature?: "INFRAESTRUTURA" | "OPERACIONAL";
+  nature?: "INFRAESTRUTURA" | "OPERACIONAL" | "LOJINHA_INVESTIMENTO" | "LOJINHA_DOACAO";
   description?: string;
   items: ExpenseItem[];
   totalAmount: number;

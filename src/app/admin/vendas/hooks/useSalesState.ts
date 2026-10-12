@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useApp } from "@/context/AppContext";
 import { useApi, Sale, Event } from "@/hooks/useApi";
+import { normalizeString } from "@/utils/stringUtils";
+import { broadcastCrossTabEvent, subscribeCrossTabEvent } from "@/utils/crossTabSync";
 
 export const useSalesState = () => {
   const { currentUser, isLoading, activeEvent } = useApp();
@@ -76,17 +78,18 @@ export const useSalesState = () => {
     }
   }, [isLoading, currentUser, api, loadSales]);
 
-  // Refresh sales list automatically in real-time when new sales or cancellations occur
+  // Sincronização em tempo real entre abas e recarregamento automático ao focar na tela
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
     const handleRefresh = () => {
       loadSales();
     };
 
     window.addEventListener("log_added", handleRefresh);
+    const unsubscribe = subscribeCrossTabEvent(["SALES_UPDATED"], handleRefresh);
+
     return () => {
       window.removeEventListener("log_added", handleRefresh);
+      unsubscribe();
     };
   }, [loadSales]);
 
@@ -119,6 +122,9 @@ export const useSalesState = () => {
       setSuccess("Venda desfeita com sucesso! Estoque e caixa foram atualizados.");
       setIsCancelModalOpen(false);
       setSaleToCancel(null);
+
+      // Notifica as outras abas (Clientes, Diretoria) em tempo real
+      broadcastCrossTabEvent("SALES_UPDATED");
     } catch (err) {
       console.error("Failed to cancel sale", err);
       setError("Erro ao estornar venda. Tente novamente.");
@@ -144,6 +150,9 @@ export const useSalesState = () => {
       setSuccess("Venda marcada como PAGA com sucesso!");
       setIsPayModalOpen(false);
       setSaleToPay(null);
+
+      // Notifica as outras abas (Clientes, Diretoria) em tempo real
+      broadcastCrossTabEvent("SALES_UPDATED");
     } catch (err) {
       console.error("Failed to pay sale", err);
       setError("Erro ao atualizar status da venda. Tente novamente.");
@@ -169,14 +178,22 @@ export const useSalesState = () => {
   const filteredSales = sales.filter((sale) => {
     // Search filter: customer name, CPF, or Sale ID
     const customer = sale.customerId as any;
-    const customerName = customer ? `${customer.firstName} ${customer.lastName}`.toLowerCase() : "";
+    const customerName = customer ? normalizeString(`${customer.firstName} ${customer.lastName}`) : "";
     const customerCpf = customer ? customer.cpf.replace(/\D/g, "") : "";
     const cleanSearch = searchTerm.toLowerCase().replace(/\D/g, "");
     
+    if (!searchTerm.trim()) {
+      const matchesStatus = statusFilter === "all" || sale.status.toLowerCase() === statusFilter.toLowerCase();
+      const matchesEvent = selectedEventId === "all" || sale.eventId === selectedEventId;
+      return matchesStatus && matchesEvent;
+    }
+
+    const normalizedSearchTerm = normalizeString(searchTerm);
+
     const matchesSearch =
-      customerName.includes(searchTerm.toLowerCase()) ||
-      customerCpf.includes(cleanSearch) ||
-      sale.id.toLowerCase().includes(searchTerm.toLowerCase());
+      customerName.includes(normalizedSearchTerm) ||
+      (cleanSearch !== "" && customerCpf.includes(cleanSearch)) ||
+      normalizeString(sale.id).includes(normalizedSearchTerm);
 
     // Status filter
     const matchesStatus =

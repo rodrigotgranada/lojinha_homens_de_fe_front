@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useApp } from "@/context/AppContext";
 import { useApi, User, Sale } from "@/hooks/useApi";
+import { normalizeString } from "@/utils/stringUtils";
+import { broadcastCrossTabEvent, subscribeCrossTabEvent } from "@/utils/crossTabSync";
 
 export const useCustomerState = () => {
   const { currentUser, isLoading } = useApp();
@@ -28,6 +30,7 @@ export const useCustomerState = () => {
   const [sortField, setSortField] = useState<string>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [customerSpentMap, setCustomerSpentMap] = useState<{ [key: string]: number }>({});
+  const [customerPendingMap, setCustomerPendingMap] = useState<{ [key: string]: boolean }>({});
 
   // Fetch users and sales to build faturamento spent map
   const loadCustomers = useCallback(async () => {
@@ -39,18 +42,24 @@ export const useCustomerState = () => {
         api.getSales()
       ]);
 
-      // Calculate faturamento spent mapping
+      // Calculate faturamento spent mapping and pending status
       const spentMap: { [key: string]: number } = {};
+      const pendingMap: { [key: string]: boolean } = {};
+      
       salesList.forEach((sale) => {
         if (sale.status !== "CANCELADO") {
           const cust = sale.customerId as any;
           const custId = cust?._id || cust?.id || cust;
           if (custId) {
             spentMap[custId.toString()] = (spentMap[custId.toString()] || 0) + sale.totalPrice;
+            if (sale.status === "PENDENTE") {
+              pendingMap[custId.toString()] = true;
+            }
           }
         }
       });
       setCustomerSpentMap(spentMap);
+      setCustomerPendingMap(pendingMap);
 
       // Default alphabetical sort by name
       usersList.sort((a, b) => {
@@ -74,34 +83,100 @@ export const useCustomerState = () => {
     }
   }, [isLoading, currentUser, loadCustomers]);
 
+  // Debt settlement states
+  const [payingSaleId, setPayingSaleId] = useState<string | null>(null);
+  const [payingAll, setPayingAll] = useState(false);
+
+  const fetchCustomerSales = useCallback(async (customerId: string) => {
+    try {
+      setLoadingSales(true);
+      const salesData = await api.getSalesByCustomer(customerId);
+      setCustomerSales(salesData);
+
+      // Sum only PAID/PENDENTE sales (exclude CANCELADO)
+      const spent = salesData
+        .filter((s) => s.status !== "CANCELADO")
+        .reduce((total, s) => total + s.totalPrice, 0);
+      setTotalSpent(spent);
+    } catch (err) {
+      console.error("Failed to load customer sales history", err);
+      setCustomerSales([]);
+      setTotalSpent(0);
+    } finally {
+      setLoadingSales(false);
+    }
+  }, [api]);
+
   // Load sales history when a customer is selected
   useEffect(() => {
-    async function loadSales() {
-      if (!selectedCustomer) {
-        setCustomerSales([]);
-        setTotalSpent(0);
-        return;
-      }
-      try {
-        setLoadingSales(true);
-        const salesData = await api.getSalesByCustomer(selectedCustomer.id);
-        setCustomerSales(salesData);
-        
-        // Sum only PAID/PENDENTE sales (exclude CANCELADO)
-        const spent = salesData
-          .filter((s) => s.status !== "CANCELADO")
-          .reduce((total, s) => total + s.totalPrice, 0);
-        setTotalSpent(spent);
-      } catch (err) {
-        console.error("Failed to load customer sales history", err);
-        setCustomerSales([]);
-        setTotalSpent(0);
-      } finally {
-        setLoadingSales(false);
-      }
+    if (!selectedCustomer) {
+      setCustomerSales([]);
+      setTotalSpent(0);
+      return;
     }
-    loadSales();
-  }, [selectedCustomer, api]);
+    fetchCustomerSales(selectedCustomer.id);
+  }, [selectedCustomer, fetchCustomerSales]);
+
+  // Pending balance & count for the currently selected customer
+  const { pendingBalance, pendingCount } = useMemo(() => {
+    const pendingSales = customerSales.filter((s) => s.status === "PENDENTE");
+    const balance = pendingSales.reduce((acc, s) => acc + s.totalPrice, 0);
+    return {
+      pendingBalance: balance,
+      pendingCount: pendingSales.length
+    };
+  }, [customerSales]);
+
+  // Pay single sale
+  const paySale = useCallback(async (saleId: string) => {
+    if (!selectedCustomer) return;
+    try {
+      setPayingSaleId(saleId);
+      await api.updateSaleStatus(saleId, "PAGO");
+      await Promise.all([
+        fetchCustomerSales(selectedCustomer.id),
+        loadCustomers()
+      ]);
+      // Notifica as outras abas (Vendas, Diretoria) em tempo real
+      broadcastCrossTabEvent("SALES_UPDATED");
+    } catch (err) {
+      console.error("Erro ao quitar venda individual:", err);
+      alert("Erro ao quitar venda. Tente novamente.");
+    } finally {
+      setPayingSaleId(null);
+    }
+  }, [selectedCustomer, api, fetchCustomerSales, loadCustomers]);
+
+  // Pay all debts of selected customer
+  const payAllSales = useCallback(async () => {
+    if (!selectedCustomer) return;
+    try {
+      setPayingAll(true);
+      await (api as any).payAllCustomerSales(selectedCustomer.id);
+      await Promise.all([
+        fetchCustomerSales(selectedCustomer.id),
+        loadCustomers()
+      ]);
+      // Notifica as outras abas (Vendas, Diretoria) em tempo real
+      broadcastCrossTabEvent("SALES_UPDATED");
+    } catch (err) {
+      console.error("Erro ao quitar todas as vendas do cliente:", err);
+      alert("Erro ao quitar todas as dívidas. Tente novamente.");
+    } finally {
+      setPayingAll(false);
+    }
+  }, [selectedCustomer, api, fetchCustomerSales, loadCustomers]);
+
+  // Escuta alterações de vendas vindas de outras abas ou ao focar nesta aba
+  useEffect(() => {
+    const unsubscribe = subscribeCrossTabEvent(["SALES_UPDATED"], () => {
+      loadCustomers();
+      if (selectedCustomer) {
+        fetchCustomerSales(selectedCustomer.id);
+      }
+    });
+    return unsubscribe;
+  }, [loadCustomers, selectedCustomer, fetchCustomerSales]);
 
   // Save customer (Create or Update)
   const saveCustomer = useCallback(async (data: any) => {
@@ -152,15 +227,18 @@ export const useCustomerState = () => {
 
     // 2. Filter by search query
     const searchFiltered = tabFiltered.filter((customer) => {
-      const fullName = `${customer.firstName} ${customer.lastName}`.toLowerCase();
+      const fullName = normalizeString(`${customer.firstName} ${customer.lastName}`);
       const cleanSearch = searchTerm.toLowerCase().replace(/\D/g, "");
       const cleanCpf = customer.cpf.replace(/\D/g, "");
+      const normalizedSearchTerm = normalizeString(searchTerm);
+
+      if (!searchTerm.trim()) return true;
 
       return (
-        fullName.includes(searchTerm.toLowerCase()) ||
-        cleanCpf.includes(cleanSearch) ||
-        customer.cpf.includes(searchTerm) ||
-        (customer.email && customer.email.toLowerCase().includes(searchTerm.toLowerCase()))
+        fullName.includes(normalizedSearchTerm) ||
+        (cleanSearch !== "" && cleanCpf.includes(cleanSearch)) ||
+        normalizeString(customer.cpf).includes(normalizedSearchTerm) ||
+        (customer.email && normalizeString(customer.email).includes(normalizedSearchTerm))
       );
     });
 
@@ -221,9 +299,10 @@ export const useCustomerState = () => {
 
     return roleFiltered.map((customer) => ({
       ...customer,
-      spent: customerSpentMap[customer.id] || 0
+      spent: customerSpentMap[customer.id] || 0,
+      hasPending: customerPendingMap[customer.id] || false
     }));
-  }, [customers, activeTab, searchTerm, roleFilter, sortField, sortDirection, customerSpentMap]);
+  }, [customers, activeTab, searchTerm, roleFilter, sortField, sortDirection, customerSpentMap, customerPendingMap]);
 
   return {
     customers,
@@ -256,6 +335,14 @@ export const useCustomerState = () => {
     sortField,
     sortDirection,
     handleSort,
-    toggleCustomerStatus
+    toggleCustomerStatus,
+
+    // Debt settlement exports
+    pendingBalance,
+    pendingCount,
+    paySale,
+    payAllSales,
+    payingSaleId,
+    payingAll
   };
 };

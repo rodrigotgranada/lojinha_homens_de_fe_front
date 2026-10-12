@@ -20,6 +20,12 @@ export const saleService = {
     });
   },
 
+  payAllCustomerSales: async (customerId: string): Promise<{ updatedCount: number; totalPaid: number }> => {
+    return apiFetch<{ updatedCount: number; totalPaid: number }>(`/sales/customer/${customerId}/pay-all`, {
+      method: "PATCH",
+    });
+  },
+
   getSalesByCustomer: async (customerId: string): Promise<Sale[]> => {
     return apiFetch<Sale[]>(`/sales?customerId=${customerId}`);
   },
