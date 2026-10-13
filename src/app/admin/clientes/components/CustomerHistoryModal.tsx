@@ -58,24 +58,6 @@ export const CustomerHistoryModal = () => {
   const handleCobrarWhatsApp = async () => {
     if (!selectedCustomer) return;
 
-    // Se já foi cobrado, avisa o operador para evitar duplicidades acidentais
-    if (selectedCustomer.lastChargedAt) {
-      const chargeTime = new Date(selectedCustomer.lastChargedAt).toLocaleString("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      const confirmSendAgain = window.confirm(
-        `AVISO: ${selectedCustomer.firstName} já foi cobrado no WhatsApp em ${chargeTime}${
-          selectedCustomer.chargeCount && selectedCustomer.chargeCount > 1
-            ? ` (${selectedCustomer.chargeCount} vezes)`
-            : ""
-        }.\n\nDeseja abrir o WhatsApp e enviar uma nova mensagem de cobrança mesmo assim?`
-      );
-      if (!confirmSendAgain) return;
-    }
-
     const opened = openWhatsAppCobranca(selectedCustomer, pendingBalance, pixConfig || undefined);
     if (opened) {
       const cId = (selectedCustomer.id || (selectedCustomer as any)._id || "").toString();
