@@ -2,8 +2,9 @@ import { apiFetch } from "./apiClient";
 import { Sale, AnalyticsData } from "@/types";
 
 export const saleService = {
-  getSales: async (): Promise<Sale[]> => {
-    return apiFetch<Sale[]>("/sales");
+  getSales: async (eventId?: string): Promise<Sale[]> => {
+    const query = eventId && eventId !== "all" ? `?eventId=${eventId}` : "";
+    return apiFetch<Sale[]>(`/sales${query}`);
   },
 
   createSale: async (sale: Omit<Sale, "id" | "createdAt"> & { operatorId?: string }): Promise<Sale> => {

@@ -44,11 +44,12 @@ export const useSalesState = () => {
   };
 
   // Fetch sales
-  const loadSales = useCallback(async () => {
+  const loadSales = useCallback(async (eventId?: string) => {
     try {
       setLoading(true);
       setError("");
-      const data = await api.getSales();
+      const targetEventId = eventId !== undefined ? eventId : selectedEventId;
+      const data = await api.getSales(targetEventId);
       setSales(data);
     } catch (err) {
       console.error("Failed to load sales", err);
@@ -56,27 +57,30 @@ export const useSalesState = () => {
     } finally {
       setLoading(false);
     }
-  }, [api]);
+  }, [api, selectedEventId]);
 
   // Load events and set active event as default selector
   useEffect(() => {
-    async function loadEvents() {
+    async function init() {
       try {
         const list = await api.getEvents();
         setEvents(list);
         const active = list.find((e) => e.isActive);
         if (active) {
           setSelectedEventId(active.id);
+          loadSales(active.id);
+        } else {
+          loadSales("all");
         }
       } catch (err) {
         console.error("Failed to load events", err);
+        loadSales();
       }
     }
     if (!isLoading && currentUser?.role === "ADMIN") {
-      loadEvents();
-      loadSales();
+      init();
     }
-  }, [isLoading, currentUser, api, loadSales]);
+  }, [isLoading, currentUser, api]);
 
   // Sincronização em tempo real entre abas e recarregamento automático ao focar na tela
   useEffect(() => {

@@ -43,8 +43,26 @@ export const eventService = {
 };
 
 export const userService = {
-  getUsers: async (): Promise<User[]> => {
-    return apiFetch<User[]>("/users");
+  getUsers: async (eventId?: string): Promise<User[]> => {
+    const query = eventId ? `?eventId=${eventId}` : "";
+    return apiFetch<User[]>(`/users${query}`);
+  },
+
+  searchUsers: async (queryText: string, eventId?: string): Promise<User[]> => {
+    const params = new URLSearchParams({ q: queryText });
+    if (eventId) params.append("eventId", eventId);
+    return apiFetch<User[]>(`/users/search?${params.toString()}`);
+  },
+
+  linkUserToEvent: async (
+    userId: string,
+    eventId: string,
+    type: "ACAMPANTE" | "TRABALHO" = "ACAMPANTE"
+  ): Promise<User> => {
+    return apiFetch<User>(`/users/${userId}/link-event`, {
+      method: "POST",
+      body: JSON.stringify({ eventId, type }),
+    });
   },
 
   getUserByCpf: async (cpf: string): Promise<User | null> => {

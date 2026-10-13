@@ -142,7 +142,7 @@ export const useProdutosState = (): ProdutosContextType => {
     setLoadingContent(true);
     try {
       const [prodList, catList] = await Promise.all([
-        productService.getAllProducts(),
+        productService.getAllProducts(activeEvent?.id),
         api.getCategories()
       ]);
       setProducts(prodList);
@@ -150,7 +150,7 @@ export const useProdutosState = (): ProdutosContextType => {
     } catch (err) {
       console.warn("Could not fetch products. Falling back to local data.", err);
       try {
-        const prodList = await productService.getAllProducts();
+        const prodList = await productService.getAllProducts(activeEvent?.id);
         setProducts(prodList);
       } catch {
         setProducts([

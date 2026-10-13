@@ -22,6 +22,10 @@ export interface User {
   active?: boolean;
   lastChargedAt?: string | Date;
   chargeCount?: number;
+  isParticipantInEvent?: boolean;
+  participantType?: "ACAMPANTE" | "TRABALHO";
+  participantStatus?: "CONFIRMADO" | "PENDENTE" | "CANCELADO";
+  eventParticipantId?: string;
 }
 
 export interface Category {
