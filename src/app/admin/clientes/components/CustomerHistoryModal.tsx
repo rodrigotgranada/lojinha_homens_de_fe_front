@@ -29,6 +29,7 @@ export const CustomerHistoryModal = () => {
   const [expandedSaleId, setExpandedSaleId] = useState<string | null>(null);
   const [pixConfig, setPixConfig] = useState<PaymentConfig | null>(null);
   const [copiedMessage, setCopiedMessage] = useState(false);
+  const [confirmingPayAll, setConfirmingPayAll] = useState(false);
 
   useEffect(() => {
     if (isHistoryModalOpen) {
@@ -44,6 +45,7 @@ export const CustomerHistoryModal = () => {
     setIsHistoryModalOpen(false);
     setSelectedCustomer(null);
     setExpandedSaleId(null);
+    setConfirmingPayAll(false);
   };
 
   const handlePayAll = async (e?: React.MouseEvent) => {
@@ -52,12 +54,12 @@ export const CustomerHistoryModal = () => {
       e.preventDefault();
     }
     if (!selectedCustomer) return;
-    const confirm = window.confirm(
-      `Deseja quitar TODAS as ${pendingCount} pendência(s) de ${selectedCustomer.firstName} ${selectedCustomer.lastName} no valor total de ${formatCurrency(pendingBalance)}?`
-    );
-    if (confirm) {
-      await payAllSales();
+    if (!confirmingPayAll) {
+      setConfirmingPayAll(true);
+      return;
     }
+    setConfirmingPayAll(false);
+    await payAllSales();
   };
 
   const handleCobrarWhatsApp = async () => {
@@ -79,13 +81,10 @@ export const CustomerHistoryModal = () => {
     }
   };
 
-  const handlePayIndividual = async (e: React.MouseEvent, saleId: string, amount: number) => {
+  const handlePayIndividual = async (e: React.MouseEvent, saleId: string) => {
     e.stopPropagation();
     e.preventDefault();
-    const confirm = window.confirm(`Deseja marcar esta compra no valor de ${formatCurrency(amount)} como PAGA?`);
-    if (confirm) {
-      await paySale(saleId);
-    }
+    await paySale(saleId);
   };
 
   const activeSalesCount = customerSales.filter((s) => s.status !== "CANCELADO").length;
@@ -196,24 +195,56 @@ export const CustomerHistoryModal = () => {
                     )}
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={handlePayAll}
-                    disabled={payingAll}
-                    className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-white hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-zinc-900 dark:text-zinc-100 text-xs font-black rounded-xl border border-zinc-250 dark:border-zinc-700 shadow-xs transition-all disabled:opacity-50 cursor-pointer"
-                  >
-                    {payingAll ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        <span>Quitando...</span>
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                        <span>Quitar Todas</span>
-                      </>
-                    )}
-                  </button>
+                  {confirmingPayAll ? (
+                    <div className="flex items-center gap-1.5 animate-in fade-in duration-150">
+                      <button
+                        type="button"
+                        onClick={handlePayAll}
+                        disabled={payingAll}
+                        className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-black rounded-xl shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+                        title="Confirmar quitação de todas as pendências"
+                      >
+                        {payingAll ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>Quitando...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Check className="h-4 w-4 stroke-[3]" />
+                            <span>Confirmar Quitar {formatCurrency(pendingBalance)}</span>
+                          </>
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setConfirmingPayAll(false)}
+                        className="px-2.5 py-2.5 bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-650 text-zinc-700 dark:text-zinc-200 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                        title="Cancelar"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handlePayAll}
+                      disabled={payingAll}
+                      className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-white hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-zinc-900 dark:text-zinc-100 text-xs font-black rounded-xl border border-zinc-250 dark:border-zinc-700 shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+                    >
+                      {payingAll ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>Quitando...</span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                          <span>Quitar Todas</span>
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
             )}
@@ -283,7 +314,7 @@ export const CustomerHistoryModal = () => {
                       {isPending && (
                         <button
                           type="button"
-                          onClick={(e) => handlePayIndividual(e, saleId, sale.totalPrice)}
+                          onClick={(e) => handlePayIndividual(e, saleId)}
                           disabled={isPayingThis || payingAll}
                           title="Marcar esta pendência específica como PAGA"
                           className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold rounded-lg transition-all shadow-xs disabled:opacity-50 cursor-pointer"
