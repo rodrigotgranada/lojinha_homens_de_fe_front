@@ -7,12 +7,13 @@ import { Input } from "@/components/ui/Input";
 import { QuickUserModal } from "@/components/QuickUserModal";
 import { ImageCropperModal } from "@/components/ImageCropperModal";
 import { CpfSearchSelect } from "@/components/ui/CpfSearchSelect";
-import { Image as ImageIcon, Sparkles, X, ChevronDown, ShoppingCart, AlertTriangle, UserCheck, HeartHandshake } from "lucide-react";
+import { Image as ImageIcon, Sparkles, X, ChevronDown, ShoppingCart, AlertTriangle, UserCheck, HeartHandshake, Layers } from "lucide-react";
 import { useProdutos } from "../context/ProdutosContext";
 import { User } from "@/hooks/useApi";
 
 export const ProdutoModal: React.FC = () => {
   const {
+    products,
     isModalOpen,
     setIsModalOpen,
     modalMode,
@@ -57,7 +58,8 @@ export const ProdutoModal: React.FC = () => {
     sponsorPhone,
     setSponsorPhone,
     isDonation,
-    setIsDonation
+    setIsDonation,
+    handleOpenStockEntriesModal,
   } = useProdutos();
 
   const [auditOpen, setAuditOpen] = useState(false);
@@ -195,7 +197,7 @@ export const ProdutoModal: React.FC = () => {
             </div>
 
             {/* View Modal Footer buttons */}
-            <div className="flex gap-3 justify-end mt-4 w-full border-t border-zinc-100 dark:border-zinc-850 pt-4">
+            <div className="flex flex-wrap gap-2.5 justify-end mt-4 w-full border-t border-zinc-100 dark:border-zinc-850 pt-4">
               <Button
                 type="button"
                 variant="secondary"
@@ -204,6 +206,23 @@ export const ProdutoModal: React.FC = () => {
               >
                 Fechar
               </Button>
+              {productId && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => {
+                    const currentProduct = products.find((p) => p.id === productId);
+                    if (currentProduct) {
+                      setIsModalOpen(false);
+                      handleOpenStockEntriesModal(currentProduct);
+                    }
+                  }}
+                  className="cursor-pointer text-sm font-bold flex items-center gap-1.5 border-amber-300 text-amber-800 dark:border-amber-900/60 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/30"
+                >
+                  <Layers className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                  Gerenciar Lotes ({stock} un.)
+                </Button>
+              )}
               <Button
                 type="button"
                 onClick={() => setModalMode("edit")}
@@ -253,67 +272,95 @@ export const ProdutoModal: React.FC = () => {
                   </div>
               </div>
 
-                <div className="flex flex-col gap-3 p-4 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30 rounded-xl">
-                  <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400 flex items-center gap-1.5">
-                    <HeartHandshake className="h-4 w-4" />
-                    Financiamento e Aporte
-                  </span>
-                  
-                  <div className="space-y-2 mt-1">
-                    <CpfSearchSelect
-                      label="Quem comprou / doou o lote? (CPF)"
-                      id="produto-sponsor-cpf"
-                      placeholder="Digite o CPF ou Nome do participante..."
-                      value={sponsorCpf}
-                      onChange={(newCpf, selectedUser) => {
-                        setSponsorCpf(newCpf);
-                        if (selectedUser) {
-                          setSponsorName(`${selectedUser.firstName} ${selectedUser.lastName}`);
-                          setSponsorPhone(selectedUser.phone || "");
-                        } else if (!newCpf) {
-                          setSponsorName("");
-                          setSponsorPhone("");
-                        }
-                      }}
-                      onAddNewUser={(typedCpf) => {
-                        setQuickCpf(typedCpf);
-                        setIsQuickUserOpen(true);
-                      }}
-                    />
-                    {sponsorName && (
-                      <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl flex items-center justify-between">
-                        <div>
-                          <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400 block">
-                            Investidor Identificado
-                          </span>
-                          <span className="text-sm font-black text-zinc-950 dark:text-emerald-100">
-                            {sponsorName}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex items-center justify-between bg-white dark:bg-zinc-800/80 p-3 rounded-xl border border-zinc-200 dark:border-zinc-700/60 mt-1">
-                    <div className="flex flex-col">
-                      <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">
-                        Este lote foi uma Doação?
+                {productId ? (
+                  <div className="flex flex-col gap-2 p-4 bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-xl">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-black text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
+                        <Layers className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                        Gestão de Lotes de Estoque ({stock} un.)
                       </span>
-                      <span className="text-[10px] text-zinc-400">
-                        Se marcado, o custo será R$ 0,00 e não haverá reembolso.
-                      </span>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => {
+                          const currentProduct = products.find((p) => p.id === productId);
+                          if (currentProduct) {
+                            setIsModalOpen(false);
+                            handleOpenStockEntriesModal(currentProduct);
+                          }
+                        }}
+                        className="text-xs font-bold border-amber-300 text-amber-800 dark:border-amber-900 dark:text-amber-300 hover:bg-amber-100"
+                      >
+                        Gerenciar Lotes
+                      </Button>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={isDonation}
-                        onChange={(e) => setIsDonation(e.target.checked)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-10 h-5 bg-zinc-300 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-pink-600"></div>
-                    </label>
+                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                      O estoque e os custos deste produto são controlados por múltiplos lotes e patrocinadores individuais.
+                    </p>
                   </div>
-                </div>
+                ) : (
+                  <div className="flex flex-col gap-3 p-4 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30 rounded-xl">
+                    <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400 flex items-center gap-1.5">
+                      <HeartHandshake className="h-4 w-4" />
+                      Lote de Entrada Inicial (Primeiro Lote)
+                    </span>
+                    
+                    <div className="space-y-2 mt-1">
+                      <CpfSearchSelect
+                        label="Quem comprou / doou o lote inicial? (CPF)"
+                        id="produto-sponsor-cpf"
+                        placeholder="Digite o CPF ou Nome do participante..."
+                        value={sponsorCpf}
+                        onChange={(newCpf, selectedUser) => {
+                          setSponsorCpf(newCpf);
+                          if (selectedUser) {
+                            setSponsorName(`${selectedUser.firstName} ${selectedUser.lastName}`);
+                            setSponsorPhone(selectedUser.phone || "");
+                          } else if (!newCpf) {
+                            setSponsorName("");
+                            setSponsorPhone("");
+                          }
+                        }}
+                        onAddNewUser={(typedCpf) => {
+                          setQuickCpf(typedCpf);
+                          setIsQuickUserOpen(true);
+                        }}
+                      />
+                      {sponsorName && (
+                        <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl flex items-center justify-between">
+                          <div>
+                            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400 block">
+                              Investidor Identificado
+                            </span>
+                            <span className="text-sm font-black text-zinc-950 dark:text-emerald-100">
+                              {sponsorName}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between bg-white dark:bg-zinc-800/80 p-3 rounded-xl border border-zinc-200 dark:border-zinc-700/60 mt-1">
+                      <div className="flex flex-col">
+                        <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">
+                          Este lote foi uma Doação?
+                        </span>
+                        <span className="text-[10px] text-zinc-400">
+                          Se marcado, o custo será R$ 0,00 e não haverá reembolso.
+                        </span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={isDonation}
+                          onChange={(e) => setIsDonation(e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-10 h-5 bg-zinc-300 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-pink-600"></div>
+                      </label>
+                    </div>
+                  </div>
+                )}
 
               {/* Estoque Inicial */}
               <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">

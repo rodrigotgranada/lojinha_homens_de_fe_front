@@ -79,4 +79,9 @@ export interface ProdutosContextType {
   handleSubmit: (e: React.FormEvent) => Promise<void>;
   categories: string[];
   loadProducts: () => Promise<void>;
+  isStockEntriesModalOpen: boolean;
+  setIsStockEntriesModalOpen: (open: boolean) => void;
+  stockEntriesProduct: Product | null;
+  setStockEntriesProduct: (p: Product | null) => void;
+  handleOpenStockEntriesModal: (product: Product) => void;
 }

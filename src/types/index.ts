@@ -20,6 +20,8 @@ export interface User {
   role: "USER" | "ADMIN";
   createdBy?: string;
   active?: boolean;
+  lastChargedAt?: string | Date;
+  chargeCount?: number;
 }
 
 export interface Category {
@@ -48,6 +50,46 @@ export interface Product {
   sponsorCpf?: string;
   sponsorPhone?: string;
   isDonation?: boolean;
+}
+
+export interface StockEntry {
+  id: string;
+  _id?: string;
+  productId: string | Product;
+  eventId?: string;
+  quantity: number;
+  costPrice: number;
+  totalCost: number;
+  sponsorName?: string;
+  sponsorCpf?: string;
+  sponsorPhone?: string;
+  sponsorUserId?: string | User;
+  isDonation: boolean;
+  date: string;
+  notes?: string;
+  createdBy?: string;
+  operatorName?: string;
+  expenseGroupId?: string;
+  expenseItemId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateStockEntryPayload {
+  productId: string;
+  eventId?: string;
+  quantity: number;
+  costPrice?: number;
+  totalCost?: number;
+  sponsorName?: string;
+  sponsorCpf?: string;
+  sponsorPhone?: string;
+  sponsorUserId?: string;
+  isDonation?: boolean;
+  date?: string;
+  notes?: string;
+  operatorName?: string;
+  createdBy?: string;
 }
 
 export interface SaleItem {
@@ -259,3 +301,29 @@ export interface ImportPreviousStockPayload {
   items: ReconciliationItem[];
   operatorName?: string;
 }
+
+export interface PaymentConfig {
+  id: string;
+  _id?: string;
+  pixKey: string;
+  keyType?: string;
+  merchantName: string;
+  bankName?: string;
+  city?: string;
+  description?: string;
+  isDefault: boolean;
+  active: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreatePaymentConfigPayload {
+  pixKey: string;
+  keyType?: string;
+  merchantName: string;
+  bankName?: string;
+  city?: string;
+  description?: string;
+  isDefault?: boolean;
+}
+

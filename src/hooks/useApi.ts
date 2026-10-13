@@ -5,6 +5,7 @@ import { eventService } from "@/services/eventService";
 import { saleService } from "@/services/saleService";
 import { categoryService } from "@/services/eventService";
 import { expenseService } from "@/services/expenseService";
+import { stockEntryService } from "@/services/stockEntryService";
 
 export * from "@/types";
 
@@ -17,6 +18,7 @@ export const useApi = () => {
       ...saleService,
       ...categoryService,
       ...expenseService,
+      ...stockEntryService,
     }),
     []
   );

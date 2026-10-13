@@ -9,7 +9,8 @@ import {
   Image as ImageIcon,
   Package,
   Search,
-  X
+  X,
+  Layers,
 } from "lucide-react";
 import { useProdutos } from "../context/ProdutosContext";
 import {
@@ -36,7 +37,8 @@ export const ProdutosTable: React.FC = () => {
     handleOpenViewModal,
     handleOpenEditModal,
     handleTriggerDelete,
-    handleTriggerReactivate
+    handleTriggerReactivate,
+    handleOpenStockEntriesModal,
   } = useProdutos();
 
   if (loadingContent) {
@@ -172,11 +174,19 @@ export const ProdutosTable: React.FC = () => {
                     </div>
                   </TableCell>
 
-                  {/* Sponsor Name */}
+                  {/* Sponsor Name / Stock Entries */}
                   <TableCell>
-                    <span className="text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 px-2 py-0.5 rounded-md border border-amber-100 dark:border-amber-900/40 inline-block max-w-[140px] truncate">
-                      {product.sponsorName || "Retiro"}
-                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleOpenStockEntriesModal(product)}
+                      className="text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 px-2.5 py-1 rounded-lg border border-amber-200/80 dark:border-amber-900/40 inline-flex items-center gap-1.5 max-w-[160px] truncate cursor-pointer transition-colors"
+                      title="Gerenciar lotes de estoque e patrocinadores deste produto"
+                    >
+                      <Layers className="h-3 w-3 shrink-0 text-amber-600 dark:text-amber-400" />
+                      <span className="truncate">
+                        {product.sponsorName || "Ver Lotes"}
+                      </span>
+                    </button>
                   </TableCell>
 
                   {/* Stock */}
@@ -208,6 +218,13 @@ export const ProdutosTable: React.FC = () => {
                   {/* Action buttons */}
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => handleOpenStockEntriesModal(product)}
+                        className="p-2 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-550 hover:text-amber-600 hover:border-amber-300 hover:bg-amber-50/20 transition-all cursor-pointer"
+                        title="Entradas de Estoque / Lotes"
+                      >
+                        <Layers className="h-4 w-4" />
+                      </button>
                       <button
                         onClick={() => handleOpenViewModal(product)}
                         className="p-2 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-550 hover:text-indigo-650 hover:border-indigo-250 hover:bg-indigo-50/20 transition-all cursor-pointer"
@@ -334,6 +351,13 @@ export const ProdutosTable: React.FC = () => {
                 {/* Action buttons */}
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
+                    <button
+                      onClick={() => handleOpenStockEntriesModal(product)}
+                      className="p-2 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-550 hover:text-amber-600 hover:border-amber-300 hover:bg-amber-50/20 transition-all cursor-pointer"
+                      title="Entradas de Estoque / Lotes"
+                    >
+                      <Layers className="h-4 w-4" />
+                    </button>
                     <button
                       onClick={() => handleOpenViewModal(product)}
                       className="p-2 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-550 hover:text-indigo-650 hover:border-indigo-250 hover:bg-indigo-50/20 transition-all cursor-pointer"

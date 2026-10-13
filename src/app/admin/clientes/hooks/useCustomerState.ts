@@ -31,6 +31,7 @@ export const useCustomerState = () => {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [customerSpentMap, setCustomerSpentMap] = useState<{ [key: string]: number }>({});
   const [customerPendingMap, setCustomerPendingMap] = useState<{ [key: string]: boolean }>({});
+  const [customerPendingAmountMap, setCustomerPendingAmountMap] = useState<{ [key: string]: number }>({});
 
   // Fetch users and sales to build faturamento spent map
   const loadCustomers = useCallback(async () => {
@@ -45,21 +46,25 @@ export const useCustomerState = () => {
       // Calculate faturamento spent mapping and pending status
       const spentMap: { [key: string]: number } = {};
       const pendingMap: { [key: string]: boolean } = {};
+      const pendingAmountMap: { [key: string]: number } = {};
       
       salesList.forEach((sale) => {
         if (sale.status !== "CANCELADO") {
           const cust = sale.customerId as any;
           const custId = cust?._id || cust?.id || cust;
           if (custId) {
-            spentMap[custId.toString()] = (spentMap[custId.toString()] || 0) + sale.totalPrice;
+            const idStr = custId.toString();
+            spentMap[idStr] = (spentMap[idStr] || 0) + sale.totalPrice;
             if (sale.status === "PENDENTE") {
-              pendingMap[custId.toString()] = true;
+              pendingMap[idStr] = true;
+              pendingAmountMap[idStr] = (pendingAmountMap[idStr] || 0) + sale.totalPrice;
             }
           }
         }
       });
       setCustomerSpentMap(spentMap);
       setCustomerPendingMap(pendingMap);
+      setCustomerPendingAmountMap(pendingAmountMap);
 
       // Default alphabetical sort by name
       usersList.sort((a, b) => {
@@ -114,7 +119,10 @@ export const useCustomerState = () => {
       setTotalSpent(0);
       return;
     }
-    fetchCustomerSales(selectedCustomer.id);
+    const cId = (selectedCustomer.id || (selectedCustomer as any)._id || "").toString();
+    if (cId) {
+      fetchCustomerSales(cId);
+    }
   }, [selectedCustomer, fetchCustomerSales]);
 
   // Pending balance & count for the currently selected customer
@@ -166,6 +174,24 @@ export const useCustomerState = () => {
       setPayingAll(false);
     }
   }, [selectedCustomer, api, fetchCustomerSales, loadCustomers]);
+
+  // Mark customer as charged via WhatsApp
+  const markCustomerCharged = useCallback(async (customerId: string) => {
+    try {
+      const updated = await (api as any).markUserCharged(customerId);
+      if (updated) {
+        setSelectedCustomer((prev) => (prev ? { ...prev, ...updated } : prev));
+        setCustomers((prev) =>
+          prev.map((c) => {
+            const cId = (c.id || (c as any)._id || "").toString();
+            return cId === customerId ? { ...c, ...updated } : c;
+          })
+        );
+      }
+    } catch (err) {
+      console.error("Erro ao registrar cobrança no cliente:", err);
+    }
+  }, [api]);
 
   // Escuta alterações de vendas vindas de outras abas ou ao focar nesta aba
   useEffect(() => {
@@ -297,12 +323,16 @@ export const useCustomerState = () => {
       return 0;
     });
 
-    return roleFiltered.map((customer) => ({
-      ...customer,
-      spent: customerSpentMap[customer.id] || 0,
-      hasPending: customerPendingMap[customer.id] || false
-    }));
-  }, [customers, activeTab, searchTerm, roleFilter, sortField, sortDirection, customerSpentMap, customerPendingMap]);
+    return roleFiltered.map((customer) => {
+      const cId = (customer.id || (customer as any)._id || "").toString();
+      return {
+        ...customer,
+        spent: customerSpentMap[cId] ?? customerSpentMap[customer.id] ?? 0,
+        hasPending: customerPendingMap[cId] ?? customerPendingMap[customer.id] ?? false,
+        pendingAmount: customerPendingAmountMap[cId] ?? customerPendingAmountMap[customer.id] ?? 0
+      };
+    });
+  }, [customers, activeTab, searchTerm, roleFilter, sortField, sortDirection, customerSpentMap, customerPendingMap, customerPendingAmountMap]);
 
   return {
     customers,
@@ -343,6 +373,7 @@ export const useCustomerState = () => {
     paySale,
     payAllSales,
     payingSaleId,
-    payingAll
+    payingAll,
+    markCustomerCharged
   };
 };

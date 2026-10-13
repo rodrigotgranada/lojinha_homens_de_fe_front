@@ -1,8 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useCustomers } from "../context/CustomerContext";
 import { Modal } from "@/components/ui/Modal";
-import { ShoppingBag, ChevronDown, ChevronUp, Clock, AlertCircle, CheckCircle2, Check, Loader2 } from "lucide-react";
+import { ShoppingBag, ChevronDown, ChevronUp, Clock, AlertCircle, CheckCircle2, Check, Loader2, MessageCircle } from "lucide-react";
 import { Product } from "@/hooks/useApi";
+import { openWhatsAppCobranca } from "@/utils/whatsappUtils";
+import { paymentConfigService } from "@/services/paymentConfigService";
+import { PaymentConfig } from "@/types";
 
 export const CustomerHistoryModal = () => {
   const {
@@ -19,10 +22,18 @@ export const CustomerHistoryModal = () => {
     paySale,
     payAllSales,
     payingSaleId,
-    payingAll
+    payingAll,
+    markCustomerCharged
   } = useCustomers();
 
   const [expandedSaleId, setExpandedSaleId] = useState<string | null>(null);
+  const [pixConfig, setPixConfig] = useState<PaymentConfig | null>(null);
+
+  useEffect(() => {
+    if (isHistoryModalOpen) {
+      paymentConfigService.getActive().then(setPixConfig).catch(console.error);
+    }
+  }, [isHistoryModalOpen]);
 
   const toggleExpand = (saleId: string) => {
     setExpandedSaleId((prev) => (prev === saleId ? null : saleId));
@@ -41,6 +52,34 @@ export const CustomerHistoryModal = () => {
     );
     if (confirm) {
       await payAllSales();
+    }
+  };
+
+  const handleCobrarWhatsApp = async () => {
+    if (!selectedCustomer) return;
+
+    // Se já foi cobrado, avisa o operador para evitar duplicidades acidentais
+    if (selectedCustomer.lastChargedAt) {
+      const chargeTime = new Date(selectedCustomer.lastChargedAt).toLocaleString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      const confirmSendAgain = window.confirm(
+        `AVISO: ${selectedCustomer.firstName} já foi cobrado no WhatsApp em ${chargeTime}${
+          selectedCustomer.chargeCount && selectedCustomer.chargeCount > 1
+            ? ` (${selectedCustomer.chargeCount} vezes)`
+            : ""
+        }.\n\nDeseja abrir o WhatsApp e enviar uma nova mensagem de cobrança mesmo assim?`
+      );
+      if (!confirmSendAgain) return;
+    }
+
+    const opened = openWhatsAppCobranca(selectedCustomer, pendingBalance, pixConfig || undefined);
+    if (opened) {
+      const cId = (selectedCustomer.id || (selectedCustomer as any)._id || "").toString();
+      await markCustomerCharged(cId);
     }
   };
 
@@ -88,6 +127,30 @@ export const CustomerHistoryModal = () => {
               </div>
             )}
 
+            {/* Banner de Aviso quando o cliente já foi cobrado anteriormente */}
+            {pendingCount > 0 && selectedCustomer.lastChargedAt && (
+              <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex items-center gap-2.5 text-blue-900 dark:text-blue-200">
+                <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                <div className="text-xs">
+                  <span className="font-black">Já cobrado no WhatsApp: </span>
+                  <span>
+                    Última cobrança enviada em{" "}
+                    <strong>
+                      {new Date(selectedCustomer.lastChargedAt).toLocaleString("pt-BR", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </strong>
+                    {selectedCustomer.chargeCount && selectedCustomer.chargeCount > 1
+                      ? ` (${selectedCustomer.chargeCount} vezes no total)`
+                      : ""}.
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Banner de Ação Rápida para Quitar Todas as Pendências */}
             {pendingCount > 0 && (
               <div className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -98,28 +161,42 @@ export const CustomerHistoryModal = () => {
                       {pendingCount} compra(s) pendente(s) ({formatCurrency(pendingBalance)})
                     </p>
                     <p className="text-[11px] text-amber-700/80 dark:text-amber-300/70">
-                      Você pode quitar tudo de uma só vez ou item a item abaixo.
+                      Saldo em aberto: <strong>{formatCurrency(pendingBalance)}</strong>. A cobrança pelo WhatsApp enviará apenas esse valor devido.
                     </p>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={handlePayAll}
-                  disabled={payingAll}
-                  className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-black rounded-xl shadow-sm transition-all disabled:opacity-50 cursor-pointer shrink-0"
-                >
-                  {payingAll ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Quitando...</span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="h-4 w-4" />
-                      <span>Quitar Todas ({formatCurrency(pendingBalance)})</span>
-                    </>
-                  )}
-                </button>
+                <div className="flex flex-wrap items-center gap-2 shrink-0 w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={handleCobrarWhatsApp}
+                    className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-black rounded-xl shadow-xs transition-all cursor-pointer flex-1 sm:flex-initial"
+                    title={`Abrir WhatsApp para cobrar apenas o saldo pendente de ${formatCurrency(pendingBalance)}`}
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    <span>
+                      {selectedCustomer.lastChargedAt ? "Cobrar Novamente" : "Cobrar no WhatsApp"} ({formatCurrency(pendingBalance)})
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handlePayAll}
+                    disabled={payingAll}
+                    className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-zinc-800 dark:text-zinc-200 text-xs font-bold rounded-xl border border-zinc-250 dark:border-zinc-700 transition-all disabled:opacity-50 cursor-pointer shrink-0"
+                  >
+                    {payingAll ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Quitando...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                        <span>Quitar Todas</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             )}
           </div>

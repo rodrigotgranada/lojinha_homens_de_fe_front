@@ -76,6 +76,15 @@ export const useProdutosState = (): ProdutosContextType => {
   const [confirmAction, setConfirmAction] = useState<"activate" | "deactivate">("deactivate");
   const [productActive, setProductActive] = useState<boolean>(true);
 
+  // Stock Entries / Batches Modal State
+  const [isStockEntriesModalOpen, setIsStockEntriesModalOpen] = useState(false);
+  const [stockEntriesProduct, setStockEntriesProduct] = useState<Product | null>(null);
+
+  const handleOpenStockEntriesModal = (product: Product) => {
+    setStockEntriesProduct(product);
+    setIsStockEntriesModalOpen(true);
+  };
+
   // Tab View state
   const [activeTab, setActiveTab] = useState<ActiveTab>("ativos");
 
@@ -623,6 +632,11 @@ export const useProdutosState = (): ProdutosContextType => {
     sponsorPhone,
     setSponsorPhone,
     isDonation,
-    setIsDonation
+    setIsDonation,
+    isStockEntriesModalOpen,
+    setIsStockEntriesModalOpen,
+    stockEntriesProduct,
+    setStockEntriesProduct,
+    handleOpenStockEntriesModal,
   };
 };

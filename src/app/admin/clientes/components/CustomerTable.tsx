@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useCustomers } from "../context/CustomerContext";
-import { ShoppingCart, Edit, Trash2, RotateCcw, ArrowUp, ArrowDown, ArrowUpDown, X, AlertTriangle, Check, Search } from "lucide-react";
+import { ShoppingCart, Edit, Trash2, RotateCcw, ArrowUp, ArrowDown, ArrowUpDown, X, AlertTriangle, Check, Search, Clock } from "lucide-react";
 import { User } from "@/hooks/useApi";
 
 export const CustomerTable = () => {
@@ -161,10 +161,48 @@ export const CustomerTable = () => {
                 filteredCustomers.map((customer) => {
                   const fullName = `${customer.firstName} ${customer.lastName}`;
                   const hasPending = (customer as any).hasPending;
+                  const pendingAmount = (customer as any).pendingAmount || 0;
 
                   return (
                     <tr key={customer.id} className={`hover:bg-zinc-50/50 dark:hover:bg-zinc-850/20 text-sm font-semibold transition-all border-l-4 ${hasPending ? "bg-amber-50 dark:bg-amber-500/15 border-amber-500" : "border-transparent text-zinc-800 dark:text-zinc-200"}`}>
-                      <td className={`py-4 px-6 font-bold ${hasPending ? "text-amber-900 dark:text-amber-400" : "text-zinc-900 dark:text-white"}`}>{fullName}</td>
+                      <td className="py-4 px-6 font-bold">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedCustomer(customer);
+                              setIsHistoryModalOpen(true);
+                            }}
+                            className={`text-left font-bold transition-colors hover:underline cursor-pointer ${
+                              hasPending ? "text-amber-900 dark:text-amber-400" : "text-zinc-900 dark:text-white"
+                            }`}
+                          >
+                            {fullName}
+                          </button>
+                          {hasPending && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedCustomer(customer);
+                                setIsHistoryModalOpen(true);
+                              }}
+                              className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 border border-amber-500/30 transition-all cursor-pointer"
+                              title="Clique para ver o histórico e cobrar via WhatsApp"
+                            >
+                              Pendente
+                            </button>
+                          )}
+                          {hasPending && customer.lastChargedAt && (
+                            <span
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30"
+                              title={`Cobrado via WhatsApp em ${new Date(customer.lastChargedAt).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })} (${customer.chargeCount || 1}x)`}
+                            >
+                              <Clock className="h-2.5 w-2.5 text-blue-600 dark:text-blue-400" />
+                              <span>Cobrado {customer.chargeCount && customer.chargeCount > 1 ? `(${customer.chargeCount}x)` : ""}</span>
+                            </span>
+                          )}
+                        </div>
+                      </td>
                       <td className={`py-4 px-6 font-mono text-xs ${hasPending ? "text-amber-700 dark:text-amber-500" : "text-zinc-505 dark:text-zinc-400"}`}>{formatCpf(customer.cpf)}</td>
                       <td className="py-4 px-6 text-zinc-550 dark:text-zinc-400">{formatPhone(customer.phone)}</td>
                       <td className="py-4 px-6 text-zinc-450 dark:text-zinc-500 text-xs truncate max-w-[180px]">
@@ -222,7 +260,7 @@ export const CustomerTable = () => {
                         ) : (
                           <button
                             onClick={() => openConfirmToggle(customer)}
-                            className="p-1.5 hover:bg-emerald-50 dark:hover:bg-emerald-955/35 text-emerald-600 dark:text-emerald-450 rounded-lg transition-all cursor-pointer inline-flex items-center justify-center"
+                            className="p-1.5 hover:bg-emerald-50 dark:hover:bg-emerald-955/35 text-emerald-600 dark:text-emerald-400 rounded-lg transition-all cursor-pointer inline-flex items-center justify-center"
                             title="Reativar participante"
                           >
                             <RotateCcw className="h-4 w-4" />

@@ -65,6 +65,12 @@ export const userService = {
       body: JSON.stringify(user),
     });
   },
+
+  markUserCharged: async (userId: string): Promise<User> => {
+    return apiFetch<User>(`/users/${userId}/charged`, {
+      method: "PATCH",
+    });
+  },
 };
 
 export const categoryService = {

@@ -12,6 +12,7 @@ import { ProdutosTable } from "./components/ProdutosTable";
 import { ProdutoModal } from "./components/ProdutoModal";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { ImportPreviousStockModal } from "./components/ImportPreviousStockModal";
+import { StockEntriesModal } from "./components/StockEntriesModal";
 
 function GerenciamentoProdutosContent() {
   const {
@@ -23,6 +24,9 @@ function GerenciamentoProdutosContent() {
     deleting,
     confirmAction,
     loadProducts,
+    isStockEntriesModalOpen,
+    setIsStockEntriesModalOpen,
+    stockEntriesProduct,
   } = useProdutos();
 
   const { activeEvent } = useApp();
@@ -74,6 +78,14 @@ function GerenciamentoProdutosContent() {
 
       {/* Modais de CRUD */}
       <ProdutoModal />
+
+      {/* Modal de Entradas de Estoque e Lotes de Patrocinadores */}
+      <StockEntriesModal
+        isOpen={isStockEntriesModalOpen}
+        onClose={() => setIsStockEntriesModalOpen(false)}
+        product={stockEntriesProduct}
+        onStockUpdated={() => loadProducts()}
+      />
 
       {/* Modal de Importação e Conciliação de Sobras */}
       {activeEvent && (
