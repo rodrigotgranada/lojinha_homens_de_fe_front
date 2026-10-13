@@ -9,6 +9,39 @@ export interface WhatsAppPixConfig {
   bankName?: string;
 }
 
+export function buildWhatsAppMessageText(
+  customer: { firstName: string; lastName: string; phone?: string },
+  pendingAmount: number,
+  pixConfig?: WhatsAppPixConfig
+): string {
+  const formattedAmount = new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(pendingAmount);
+
+  const customerName = `${customer.firstName} ${customer.lastName || ""}`.trim();
+
+  const activePixKey = pixConfig?.pixKey?.trim() || "homensdefe.pel@gmail.com";
+  const activeMerchantName = pixConfig?.merchantName?.trim() || "Alcides";
+  const activeBankName = pixConfig?.bankName?.trim() || "Nubank";
+
+  const bankLine = activeBankName ? `🏦 *Banco:* ${activeBankName}\n` : "";
+
+  return `Olá, *${customerName}*! Tudo bem?🙏
+
+Aqui é da equipe da *Lojinha Homens de Fé*.
+
+No fechamento do caixa da lojinha, identificamos no seu cadastro uma pendência no valor de *${formattedAmount}*.
+
+Se estiver tudo certinho, pedimos por gentileza que realize o acerto através da nossa chave PIX:
+
+🔑 *Chave PIX:* ${activePixKey}
+👤 *Nome do Favorecido:* ${activeMerchantName}
+${bankLine}Assim que efetuar o pagamento, por favor nos envie o comprovante por aqui para que possamos dar a baixa no sistema.
+
+Muito obrigado pela compreensão e que Deus abençoe! 🙌`;
+}
+
 export function buildWhatsAppCobrancaUrl(
   customer: { firstName: string; lastName: string; phone?: string },
   pendingAmount: number,
@@ -26,33 +59,7 @@ export function buildWhatsAppCobrancaUrl(
     cleanPhone = `55${cleanPhone}`;
   }
 
-  const formattedAmount = new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(pendingAmount);
-
-  const customerName = `${customer.firstName} ${customer.lastName || ""}`.trim();
-
-  const activePixKey = pixConfig?.pixKey?.trim() || "homensdefe.pel@gmail.com";
-  const activeMerchantName = pixConfig?.merchantName?.trim() || "Alcides";
-  const activeBankName = pixConfig?.bankName?.trim() || "Nubank";
-
-  const bankLine = activeBankName ? `🏦 *Banco:* ${activeBankName}\n` : "";
-
-  const message = `Olá, *${customerName}*! Tudo bem?🙏
-
-Aqui é da equipe da *Lojinha Homens de Fé*.
-
-No fechamento do caixa da lojinha, identificamos no seu cadastro uma pendência no valor de *${formattedAmount}*.
-
-Se estiver tudo certinho, pedimos por gentileza que realize o acerto através da nossa chave PIX:
-
-🔑 *Chave PIX:* ${activePixKey}
-👤 *Nome do Favorecido:* ${activeMerchantName}
-${bankLine}
-Assim que efetuar o pagamento, por favor nos envie o comprovante por aqui para que possamos dar a baixa no sistema.
-
-Muito obrigado pela compreensão e que Deus abençoe! 🙌`;
+  const message = buildWhatsAppMessageText(customer, pendingAmount, pixConfig);
 
   // Detecta se é dispositivo móvel (iOS / Android) para usar o esquema universal wa.me
   // No computador/desktop, usa web.whatsapp.com/send para abrir diretamente a conversa no WhatsApp Web logado no navegador
@@ -94,15 +101,35 @@ export function openWhatsAppCobranca(
     return false;
   }
 
-  const openedWin = window.open(url, "_blank", "noopener,noreferrer");
-  if (!openedWin) {
+  // Nomeamos o target como "lojinha_whatsapp" em vez de "_blank".
+  // Desta forma, o navegador reutiliza a MESMA aba do WhatsApp sempre que você clicar,
+  // evitando abrir várias abas acumuladas e derrubar umas às outras.
+  const openedWin = window.open(url, "lojinha_whatsapp");
+  if (openedWin) {
+    try {
+      openedWin.focus();
+    } catch {}
+  } else {
     const link = document.createElement("a");
     link.href = url;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
+    link.target = "lojinha_whatsapp";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   }
   return true;
+}
+
+export async function copyWhatsAppMessage(
+  customer: { firstName: string; lastName: string; phone?: string },
+  pendingAmount: number,
+  pixConfig?: WhatsAppPixConfig
+): Promise<boolean> {
+  const message = buildWhatsAppMessageText(customer, pendingAmount, pixConfig);
+  try {
+    await navigator.clipboard.writeText(message);
+    return true;
+  } catch {
+    return false;
+  }
 }

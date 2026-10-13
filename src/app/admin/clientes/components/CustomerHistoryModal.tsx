@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useCustomers } from "../context/CustomerContext";
 import { Modal } from "@/components/ui/Modal";
-import { ShoppingBag, ChevronDown, ChevronUp, Clock, AlertCircle, CheckCircle2, Check, Loader2, MessageCircle } from "lucide-react";
+import { ShoppingBag, ChevronDown, ChevronUp, Clock, AlertCircle, CheckCircle2, Check, Loader2, MessageCircle, Copy } from "lucide-react";
 import { Product } from "@/hooks/useApi";
-import { openWhatsAppCobranca } from "@/utils/whatsappUtils";
+import { openWhatsAppCobranca, copyWhatsAppMessage } from "@/utils/whatsappUtils";
 import { paymentConfigService } from "@/services/paymentConfigService";
 import { PaymentConfig } from "@/types";
 
@@ -28,6 +28,7 @@ export const CustomerHistoryModal = () => {
 
   const [expandedSaleId, setExpandedSaleId] = useState<string | null>(null);
   const [pixConfig, setPixConfig] = useState<PaymentConfig | null>(null);
+  const [copiedMessage, setCopiedMessage] = useState(false);
 
   useEffect(() => {
     if (isHistoryModalOpen) {
@@ -62,6 +63,15 @@ export const CustomerHistoryModal = () => {
     if (opened) {
       const cId = (selectedCustomer.id || (selectedCustomer as any)._id || "").toString();
       await markCustomerCharged(cId);
+    }
+  };
+
+  const handleCopyMessage = async () => {
+    if (!selectedCustomer) return;
+    const copied = await copyWhatsAppMessage(selectedCustomer, pendingBalance, pixConfig || undefined);
+    if (copied) {
+      setCopiedMessage(true);
+      setTimeout(() => setCopiedMessage(false), 2500);
     }
   };
 
@@ -160,6 +170,25 @@ export const CustomerHistoryModal = () => {
                     <span>
                       {selectedCustomer.lastChargedAt ? "Cobrar Novamente" : "Cobrar no WhatsApp"} ({formatCurrency(pendingBalance)})
                     </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleCopyMessage}
+                    className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 bg-white hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-zinc-750 dark:text-zinc-200 text-xs font-bold rounded-xl border border-zinc-250 dark:border-zinc-700 shadow-xs transition-all cursor-pointer"
+                    title="Copiar texto da cobrança para colar em qualquer aba ou conversa existente do WhatsApp"
+                  >
+                    {copiedMessage ? (
+                      <>
+                        <Check className="h-4 w-4 text-emerald-600 stroke-[3]" />
+                        <span className="text-emerald-700 dark:text-emerald-400 font-black">Copiado!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-4 w-4 text-zinc-500" />
+                        <span>Copiar Mensagem</span>
+                      </>
+                    )}
                   </button>
 
                   <button
