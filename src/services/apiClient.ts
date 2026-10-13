@@ -17,9 +17,12 @@ export async function apiFetch<T>(endpoint: string, options?: RequestInit): Prom
   const url = `${apiBase}${endpoint}`;
   try {
     const res = await fetch(url, {
+      cache: "no-store",
       ...options,
       headers: {
         "Content-Type": "application/json",
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
         ...options?.headers,
       },
     });

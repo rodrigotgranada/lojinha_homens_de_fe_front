@@ -142,6 +142,14 @@ export const useCustomerState = () => {
     const sId = (saleId || "").toString();
     if (!sId) return;
 
+    // Atualização otimista imediata na UI
+    setCustomerSales((prev) =>
+      prev.map((s) => {
+        const idStr = (s.id || (s as any)._id || "").toString();
+        return idStr === sId ? { ...s, status: "PAGO" } : s;
+      })
+    );
+
     try {
       setPayingSaleId(sId);
       await api.updateSaleStatus(sId, "PAGO");
@@ -154,6 +162,8 @@ export const useCustomerState = () => {
     } catch (err) {
       console.error("Erro ao quitar venda individual:", err);
       alert("Erro ao quitar venda. Tente novamente.");
+      // Rollback se falhar
+      if (cId) fetchCustomerSales(cId);
     } finally {
       setPayingSaleId(null);
     }
@@ -165,6 +175,14 @@ export const useCustomerState = () => {
     const cId = (selectedCustomer.id || (selectedCustomer as any)._id || "").toString();
     if (!cId) return;
 
+    // Atualização otimista imediata na UI: marca todas as vendas do cliente como PAGO
+    setCustomerSales((prev) =>
+      prev.map((s) => ({ ...s, status: "PAGO" }))
+    );
+    setCustomerPendingMap((prev) => ({ ...prev, [cId]: false }));
+    setCustomerPendingAmountMap((prev) => ({ ...prev, [cId]: 0 }));
+    setSelectedCustomer((prev) => (prev ? { ...prev, lastChargedAt: undefined, chargeCount: 0 } : prev));
+
     try {
       setPayingAll(true);
       await (api as any).payAllCustomerSales(cId);
@@ -172,13 +190,13 @@ export const useCustomerState = () => {
         fetchCustomerSales(cId),
         loadCustomers(true)
       ]);
-      // Reset da indicação local de cobrança já que as pendências foram zeradas
-      setSelectedCustomer((prev) => (prev ? { ...prev, lastChargedAt: undefined, chargeCount: 0 } : prev));
       // Notifica as outras abas (Vendas, Diretoria) em tempo real
       broadcastCrossTabEvent("SALES_UPDATED");
     } catch (err) {
       console.error("Erro ao quitar todas as vendas do cliente:", err);
       alert("Erro ao quitar todas as dívidas. Tente novamente.");
+      // Rollback se falhar
+      fetchCustomerSales(cId);
     } finally {
       setPayingAll(false);
     }
