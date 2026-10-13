@@ -98,6 +98,7 @@ export const CustomerHistoryModal = () => {
       isOpen={isHistoryModalOpen}
       onClose={handleClose}
       title={`Histórico de Compras - ${selectedCustomer ? `${selectedCustomer.firstName} ${selectedCustomer.lastName}` : ""}`}
+      size="lg"
     >
       <div className="space-y-5 max-h-[75vh] overflow-y-auto pr-1">
         {selectedCustomer && (
@@ -153,23 +154,24 @@ export const CustomerHistoryModal = () => {
 
             {/* Banner de Ação Rápida para Quitar Todas as Pendências */}
             {pendingCount > 0 && (
-              <div className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-2.5">
-                  <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0" />
+              <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex flex-col gap-3.5">
+                <div className="flex items-start gap-2.5">
+                  <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                   <div>
                     <p className="text-xs font-black text-amber-900 dark:text-amber-200">
                       {pendingCount} compra(s) pendente(s) ({formatCurrency(pendingBalance)})
                     </p>
-                    <p className="text-[11px] text-amber-700/80 dark:text-amber-300/70">
+                    <p className="text-[11px] text-amber-700/80 dark:text-amber-300/70 mt-0.5">
                       Saldo em aberto: <strong>{formatCurrency(pendingBalance)}</strong>. A cobrança pelo WhatsApp enviará apenas esse valor devido.
                     </p>
                   </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 shrink-0 w-full sm:w-auto">
+
+                <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-amber-500/20">
                   <button
                     type="button"
                     onClick={handleCobrarWhatsApp}
-                    className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-black rounded-xl shadow-xs transition-all cursor-pointer flex-1 sm:flex-initial"
+                    className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-black rounded-xl shadow-xs transition-all cursor-pointer"
                     title={`Abrir WhatsApp para cobrar apenas o saldo pendente de ${formatCurrency(pendingBalance)}`}
                   >
                     <MessageCircle className="h-4 w-4" />
@@ -182,7 +184,7 @@ export const CustomerHistoryModal = () => {
                     type="button"
                     onClick={handlePayAll}
                     disabled={payingAll}
-                    className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-zinc-800 dark:text-zinc-200 text-xs font-bold rounded-xl border border-zinc-250 dark:border-zinc-700 transition-all disabled:opacity-50 cursor-pointer shrink-0"
+                    className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-white hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-zinc-900 dark:text-zinc-100 text-xs font-black rounded-xl border border-zinc-250 dark:border-zinc-700 shadow-xs transition-all disabled:opacity-50 cursor-pointer"
                   >
                     {payingAll ? (
                       <>
