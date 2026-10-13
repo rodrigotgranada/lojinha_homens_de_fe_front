@@ -301,11 +301,10 @@ export default function ConfiguracoesAdminPage() {
           <button
             type="button"
             onClick={() => setActiveTab("pix")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
-              activeTab === "pix"
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${activeTab === "pix"
                 ? "bg-white dark:bg-zinc-850 text-indigo-600 dark:text-indigo-400 shadow-xs border border-zinc-200/80 dark:border-zinc-700/60"
                 : "text-zinc-550 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-            }`}
+              }`}
           >
             <QrCode className="h-4 w-4" />
             <span>Chave PIX & Pagamentos</span>
@@ -313,11 +312,10 @@ export default function ConfiguracoesAdminPage() {
           <button
             type="button"
             onClick={() => setActiveTab("connectivity")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
-              activeTab === "connectivity"
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${activeTab === "connectivity"
                 ? "bg-white dark:bg-zinc-850 text-indigo-600 dark:text-indigo-400 shadow-xs border border-zinc-200/80 dark:border-zinc-700/60"
                 : "text-zinc-550 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-            }`}
+              }`}
           >
             <Wifi className="h-4 w-4" />
             <span>Servidor Offline</span>
@@ -331,11 +329,10 @@ export default function ConfiguracoesAdminPage() {
           {/* Feedback Banner */}
           {pixFeedback && (
             <div
-              className={`p-4 rounded-2xl text-xs font-bold flex items-center gap-2.5 transition-all ${
-                pixFeedback.type === "success"
+              className={`p-4 rounded-2xl text-xs font-bold flex items-center gap-2.5 transition-all ${pixFeedback.type === "success"
                   ? "bg-emerald-50 dark:bg-emerald-955/25 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
                   : "bg-red-50 dark:bg-red-955/25 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800"
-              }`}
+                }`}
             >
               {pixFeedback.type === "success" ? (
                 <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
@@ -511,7 +508,7 @@ export default function ConfiguracoesAdminPage() {
               {/* Chat Bubble simulation */}
               <div className="bg-white dark:bg-zinc-850 border border-zinc-200/80 dark:border-zinc-700/60 rounded-2xl p-4 text-xs space-y-2.5 text-zinc-800 dark:text-zinc-200 shadow-sm leading-relaxed font-sans">
                 <p>
-                  Olá, <strong>Carlos Eduardo</strong>! Tudo bem? A paz do Senhor! 🙏
+                  Olá, <strong>Carlos Eduardo</strong>! Tudo bem? 🙏
                 </p>
                 <p>
                   Aqui é da equipe da <strong>Lojinha Homens de Fé</strong>.
@@ -674,9 +671,8 @@ export default function ConfiguracoesAdminPage() {
 
           {/* Input IP Address */}
           <div
-            className={`space-y-2 transition-all duration-300 ${
-              useLocalApi ? "opacity-100 max-h-40" : "opacity-40 pointer-events-none select-none"
-            }`}
+            className={`space-y-2 transition-all duration-300 ${useLocalApi ? "opacity-100 max-h-40" : "opacity-40 pointer-events-none select-none"
+              }`}
           >
             <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
               Endereço IP do Notebook Servidor

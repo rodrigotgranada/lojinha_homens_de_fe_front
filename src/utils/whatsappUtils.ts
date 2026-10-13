@@ -39,7 +39,7 @@ export function buildWhatsAppCobrancaUrl(
 
   const bankLine = activeBankName ? `🏦 *Banco:* ${activeBankName}\n` : "";
 
-  const message = `Olá, *${customerName}*! Tudo bem? A paz do Senhor! 🙏
+  const message = `Olá, *${customerName}*! Tudo bem?🙏
 
 Aqui é da equipe da *Lojinha Homens de Fé*.
 
