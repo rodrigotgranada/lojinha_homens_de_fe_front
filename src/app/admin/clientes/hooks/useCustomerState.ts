@@ -34,9 +34,9 @@ export const useCustomerState = () => {
   const [customerPendingAmountMap, setCustomerPendingAmountMap] = useState<{ [key: string]: number }>({});
 
   // Fetch users and sales to build faturamento spent map
-  const loadCustomers = useCallback(async () => {
+  const loadCustomers = useCallback(async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       setError("");
       const [usersList, salesList] = await Promise.all([
         api.getUsers(),
@@ -78,7 +78,7 @@ export const useCustomerState = () => {
       console.error("Failed to fetch users and sales", err);
       setError("Erro ao carregar lista de usuários.");
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [api]);
 
@@ -138,12 +138,16 @@ export const useCustomerState = () => {
   // Pay single sale
   const paySale = useCallback(async (saleId: string) => {
     if (!selectedCustomer) return;
+    const cId = (selectedCustomer.id || (selectedCustomer as any)._id || "").toString();
+    const sId = (saleId || "").toString();
+    if (!sId) return;
+
     try {
-      setPayingSaleId(saleId);
-      await api.updateSaleStatus(saleId, "PAGO");
+      setPayingSaleId(sId);
+      await api.updateSaleStatus(sId, "PAGO");
       await Promise.all([
-        fetchCustomerSales(selectedCustomer.id),
-        loadCustomers()
+        cId ? fetchCustomerSales(cId) : Promise.resolve(),
+        loadCustomers(true)
       ]);
       // Notifica as outras abas (Vendas, Diretoria) em tempo real
       broadcastCrossTabEvent("SALES_UPDATED");
@@ -158,13 +162,18 @@ export const useCustomerState = () => {
   // Pay all debts of selected customer
   const payAllSales = useCallback(async () => {
     if (!selectedCustomer) return;
+    const cId = (selectedCustomer.id || (selectedCustomer as any)._id || "").toString();
+    if (!cId) return;
+
     try {
       setPayingAll(true);
-      await (api as any).payAllCustomerSales(selectedCustomer.id);
+      await (api as any).payAllCustomerSales(cId);
       await Promise.all([
-        fetchCustomerSales(selectedCustomer.id),
-        loadCustomers()
+        fetchCustomerSales(cId),
+        loadCustomers(true)
       ]);
+      // Reset da indicação local de cobrança já que as pendências foram zeradas
+      setSelectedCustomer((prev) => (prev ? { ...prev, lastChargedAt: undefined, chargeCount: 0 } : prev));
       // Notifica as outras abas (Vendas, Diretoria) em tempo real
       broadcastCrossTabEvent("SALES_UPDATED");
     } catch (err) {
@@ -196,9 +205,12 @@ export const useCustomerState = () => {
   // Escuta alterações de vendas vindas de outras abas ou ao focar nesta aba
   useEffect(() => {
     const unsubscribe = subscribeCrossTabEvent(["SALES_UPDATED"], () => {
-      loadCustomers();
+      loadCustomers(true);
       if (selectedCustomer) {
-        fetchCustomerSales(selectedCustomer.id);
+        const cId = (selectedCustomer.id || (selectedCustomer as any)._id || "").toString();
+        if (cId) {
+          fetchCustomerSales(cId);
+        }
       }
     });
     return unsubscribe;

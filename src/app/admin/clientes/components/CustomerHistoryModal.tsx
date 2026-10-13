@@ -46,7 +46,11 @@ export const CustomerHistoryModal = () => {
     setExpandedSaleId(null);
   };
 
-  const handlePayAll = async () => {
+  const handlePayAll = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
     if (!selectedCustomer) return;
     const confirm = window.confirm(
       `Deseja quitar TODAS as ${pendingCount} pendência(s) de ${selectedCustomer.firstName} ${selectedCustomer.lastName} no valor total de ${formatCurrency(pendingBalance)}?`
@@ -77,6 +81,7 @@ export const CustomerHistoryModal = () => {
 
   const handlePayIndividual = async (e: React.MouseEvent, saleId: string, amount: number) => {
     e.stopPropagation();
+    e.preventDefault();
     const confirm = window.confirm(`Deseja marcar esta compra no valor de ${formatCurrency(amount)} como PAGA?`);
     if (confirm) {
       await paySale(saleId);
@@ -231,14 +236,15 @@ export const CustomerHistoryModal = () => {
         ) : (
           <div className="space-y-3">
             {customerSales.map((sale) => {
-              const isExpanded = expandedSaleId === sale.id;
+              const saleId = (sale.id || (sale as any)._id || "").toString();
+              const isExpanded = expandedSaleId === saleId;
               const dateStr = new Date(sale.createdAt).toLocaleString("pt-BR");
               const isPending = sale.status === "PENDENTE";
-              const isPayingThis = payingSaleId === sale.id;
+              const isPayingThis = payingSaleId === saleId;
 
               return (
                 <div
-                  key={sale.id}
+                  key={saleId}
                   className={`border rounded-2xl overflow-hidden transition-all duration-200 ${
                     isPending
                       ? "border-amber-300 dark:border-amber-700/60 bg-amber-50/20 dark:bg-amber-950/10"
@@ -249,12 +255,12 @@ export const CustomerHistoryModal = () => {
                 >
                   {/* Collapsible Header */}
                   <div
-                    onClick={() => toggleExpand(sale.id)}
+                    onClick={() => toggleExpand(saleId)}
                     className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer select-none"
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <p className="text-xs font-mono text-zinc-400">#{sale.id.slice(-8)}</p>
+                        <p className="text-xs font-mono text-zinc-400">#{saleId ? saleId.slice(-8) : "---"}</p>
                         <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full border uppercase tracking-wider ${
                           sale.status === "PAGO"
                             ? "bg-emerald-50 dark:bg-emerald-955/20 text-emerald-600 dark:text-emerald-450 border-emerald-100 dark:border-emerald-900/30"
@@ -277,7 +283,7 @@ export const CustomerHistoryModal = () => {
                       {isPending && (
                         <button
                           type="button"
-                          onClick={(e) => handlePayIndividual(e, sale.id, sale.totalPrice)}
+                          onClick={(e) => handlePayIndividual(e, saleId, sale.totalPrice)}
                           disabled={isPayingThis || payingAll}
                           title="Marcar esta pendência específica como PAGA"
                           className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold rounded-lg transition-all shadow-xs disabled:opacity-50 cursor-pointer"
