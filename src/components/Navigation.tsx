@@ -132,6 +132,41 @@ export const Navigation: React.FC = () => {
 
   const isAdmin = currentUser?.role === "ADMIN";
   const activeLink = adminLinks.find((l) => l.href === pathname);
+  const isPublicInscription = pathname === "/acampar" || pathname === "/trabalhar";
+
+  if (isPublicInscription) {
+    return (
+      <header className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 sticky top-0 z-40 shadow-xs print:hidden">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img
+              src="/icone.png"
+              alt="Homens de Fé"
+              className="h-10 w-auto max-w-[80px] object-contain"
+            />
+            <div>
+              <span className="font-black text-base tracking-tight text-zinc-900 dark:text-zinc-100 block leading-tight">
+                Homens de Fé
+              </span>
+              <span className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider block">
+                {pathname === "/acampar" ? "Inscrição Acampamento" : "Inscrição Equipe de Trabalho"}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleThemeChange(theme === "dark" ? "light" : "dark")}
+              className="p-2 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-800 cursor-pointer flex items-center justify-center transition-all"
+              title="Alternar Tema"
+            >
+              {theme === "dark" ? <Sun className="h-4.5 w-4.5" /> : <Moon className="h-4.5 w-4.5" />}
+            </button>
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <>

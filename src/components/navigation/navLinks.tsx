@@ -12,6 +12,7 @@ import {
   Activity,
   Settings,
   PieChart,
+  ClipboardList,
 } from "lucide-react";
 
 export interface NavLinkItem {
@@ -29,6 +30,7 @@ export const adminLinks: NavLinkItem[] = [
   { name: "Prestação Lojinha", href: "/admin/prestacao-contas", icon: <TrendingUp className="h-4 w-4" /> },
   { name: "Categorias", href: "/admin/categorias", icon: <Tag className="h-4 w-4" /> },
   { name: "Eventos", href: "/admin/eventos", icon: <Calendar className="h-4 w-4" /> },
+  { name: "Inscrições", href: "/admin/inscricoes", icon: <ClipboardList className="h-4 w-4" /> },
   { name: "Vendas", href: "/admin/vendas", icon: <FileText className="h-4 w-4" /> },
   { name: "Clientes", href: "/admin/clientes", icon: <User className="h-4 w-4" /> },
   { name: "Logs", href: "/admin/logs", icon: <Activity className="h-4 w-4" /> },

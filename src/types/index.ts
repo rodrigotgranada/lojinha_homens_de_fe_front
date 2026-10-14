@@ -17,6 +17,9 @@ export interface User {
   firstName: string;
   lastName: string;
   phone: string;
+  city?: string;
+  birthDate?: string | Date;
+  parish?: string;
   role: "USER" | "ADMIN";
   createdBy?: string;
   active?: boolean;
