@@ -20,7 +20,7 @@ export const expenseService = {
     eventId: string;
     title: string;
     category?: string;
-    nature?: "INFRAESTRUTURA" | "OPERACIONAL";
+    nature?: "INFRAESTRUTURA" | "OPERACIONAL" | "LOJINHA_INVESTIMENTO" | "LOJINHA_DOACAO";
     description?: string;
     operatorName?: string;
   }): Promise<Expense> => {

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Layers, Users, DollarSign, Filter, ShoppingBag } from "lucide-react";
+import { Layers, Users, DollarSign, Filter } from "lucide-react";
 import { useDespesas } from "../context/DespesasContext";
 
 export const DespesasTabs: React.FC = () => {
@@ -9,7 +9,6 @@ export const DespesasTabs: React.FC = () => {
     activeTab,
     setActiveTab,
     expensesList,
-    storeProductsList,
     payersReport,
     incomesList,
     natureFilter,
@@ -29,11 +28,7 @@ export const DespesasTabs: React.FC = () => {
         >
           <Layers className="h-4 w-4" />
           Despesas & Obras ({expensesList.length})
-        </button>
-
-
-
-        <button
+        </button>        <button
           onClick={() => setActiveTab("irmãos")}
           className={`pb-3 px-4 font-bold text-sm transition-all border-b-2 cursor-pointer flex items-center gap-2 ${
             activeTab === "irmãos"

@@ -27,7 +27,8 @@ import {
   CheckCircle2,
   AlertCircle,
   Shield,
-  Layers
+  Layers,
+  ShoppingBag
 } from "lucide-react";
 
 export default function AdminPortalPage() {
@@ -184,7 +185,7 @@ export default function AdminPortalPage() {
             </div>
 
             {/* Quick Modules Shortcuts of this active retreat */}
-            <div className="mt-6 pt-6 border-t border-amber-200/60 dark:border-zinc-800 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+            <div className="mt-6 pt-6 border-t border-amber-200/60 dark:border-zinc-800 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2.5">
               <button
                 onClick={() => handleSelectEvent(active, "/admin/diretoria")}
                 className="p-3 rounded-xl bg-white/80 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60 hover:border-amber-400 dark:hover:border-amber-500/50 text-left transition-all cursor-pointer shadow-2xs hover:shadow-xs"
@@ -222,12 +223,21 @@ export default function AdminPortalPage() {
               </button>
 
               <button
+                onClick={() => handleSelectEvent(active, "/admin/custos-loja")}
+                className="p-3 rounded-xl bg-white/80 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60 hover:border-amber-400 dark:hover:border-amber-500/50 text-left transition-all cursor-pointer shadow-2xs hover:shadow-xs"
+              >
+                <ShoppingBag className="w-4 h-4 text-amber-600 dark:text-amber-400 mb-1" />
+                <span className="text-xs font-bold block text-zinc-900 dark:text-zinc-100">Custos da Loja</span>
+                <span className="text-[10px] text-zinc-500">Lotes & Investidores</span>
+              </button>
+
+              <button
                 onClick={() => handleSelectEvent(active, "/admin/despesas")}
                 className="p-3 rounded-xl bg-white/80 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60 hover:border-amber-400 dark:hover:border-amber-500/50 text-left transition-all cursor-pointer shadow-2xs hover:shadow-xs"
               >
                 <Wrench className="w-4 h-4 text-rose-600 dark:text-rose-400 mb-1" />
-                <span className="text-xs font-bold block text-zinc-900 dark:text-zinc-100">Despesas</span>
-                <span className="text-[10px] text-zinc-500">Obras e reembolsos</span>
+                <span className="text-xs font-bold block text-zinc-900 dark:text-zinc-100">Obras & Retiro</span>
+                <span className="text-[10px] text-zinc-500">Infra & reembolsos</span>
               </button>
 
               <button

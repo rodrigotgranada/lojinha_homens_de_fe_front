@@ -14,6 +14,7 @@ import {
   PieChart,
   ClipboardList,
   Compass,
+  ShoppingBag,
 } from "lucide-react";
 
 export interface NavLinkItem {
@@ -28,7 +29,8 @@ export const eventScopeLinks: NavLinkItem[] = [
   { name: "Inscrições & Equipe", href: "/admin/inscricoes", icon: <ClipboardList className="h-4 w-4" />, category: "EVENT" },
   { name: "PDV Caixa", href: "/admin/pdv", icon: <Store className="h-4 w-4" />, category: "EVENT" },
   { name: "Vendas do Retiro", href: "/admin/vendas", icon: <FileText className="h-4 w-4" />, category: "EVENT" },
-  { name: "Despesas & Obras", href: "/admin/despesas", icon: <Wrench className="h-4 w-4" />, category: "EVENT" },
+  { name: "Custos da Lojinha", href: "/admin/custos-loja", icon: <ShoppingBag className="h-4 w-4" />, category: "EVENT" },
+  { name: "Custos de Obras & Retiro", href: "/admin/despesas", icon: <Wrench className="h-4 w-4" />, category: "EVENT" },
   { name: "Prestação de Contas A4", href: "/admin/prestacao-contas", icon: <TrendingUp className="h-4 w-4" />, category: "EVENT" },
 ];
 
