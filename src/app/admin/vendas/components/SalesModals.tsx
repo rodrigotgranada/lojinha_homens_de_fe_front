@@ -1,6 +1,7 @@
 import React from "react";
 import { useSales } from "../context/SalesContext";
 import { X, Trash2, CheckCircle } from "lucide-react";
+import { ReturnItemsModal } from "@/components/ReturnItemsModal";
 
 export const SalesModals = () => {
   const {
@@ -16,6 +17,11 @@ export const SalesModals = () => {
     setIsPayModalOpen,
     paying,
     handlePaySale,
+    saleToReturn,
+    setSaleToReturn,
+    isReturnModalOpen,
+    setIsReturnModalOpen,
+    loadSales,
     formatCurrency
   } = useSales();
 
@@ -149,6 +155,21 @@ export const SalesModals = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Return Items Modal */}
+      {isReturnModalOpen && saleToReturn && (
+        <ReturnItemsModal
+          isOpen={isReturnModalOpen}
+          onClose={() => {
+            setIsReturnModalOpen(false);
+            setSaleToReturn(null);
+          }}
+          sale={saleToReturn}
+          onSuccess={() => {
+            loadSales();
+          }}
+        />
       )}
     </>
   );

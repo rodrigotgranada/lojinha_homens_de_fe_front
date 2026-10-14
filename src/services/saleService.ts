@@ -41,4 +41,11 @@ export const saleService = {
   getEventAnalytics: async (eventId: string): Promise<AnalyticsData> => {
     return apiFetch<AnalyticsData>(`/sales/analytics/event/${eventId}`);
   },
+
+  returnSaleItems: async (saleId: string, data: import("@/types").ReturnSaleItemsPayload): Promise<Sale> => {
+    return apiFetch<Sale>(`/sales/${saleId}/return-items`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
 };

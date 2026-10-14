@@ -1,6 +1,6 @@
 import React from "react";
 import { useSales } from "../context/SalesContext";
-import { ChevronDown, ChevronUp, CheckCircle, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, CheckCircle, Trash2, RotateCcw } from "lucide-react";
 import { Product } from "@/hooks/useApi";
 
 export const SalesTable = () => {
@@ -12,7 +12,9 @@ export const SalesTable = () => {
     setSaleToPay,
     setIsPayModalOpen,
     setSaleToCancel,
-    setIsCancelModalOpen
+    setIsCancelModalOpen,
+    setSaleToReturn,
+    setIsReturnModalOpen
   } = useSales();
 
   return (
@@ -85,6 +87,19 @@ export const SalesTable = () => {
                             <CheckCircle className="h-5 w-5" />
                           </button>
                         )}
+
+                        {sale.status !== "CANCELADO" && (
+                          <button
+                            onClick={() => {
+                              setSaleToReturn(sale);
+                              setIsReturnModalOpen(true);
+                            }}
+                            className="p-1.5 hover:bg-amber-50 dark:hover:bg-amber-955/30 text-amber-600 dark:text-amber-400 rounded-lg transition-all hover:text-amber-700"
+                            title="Devolver Itens desta Venda"
+                          >
+                            <RotateCcw className="h-5 w-5" />
+                          </button>
+                        )}
                         
                         {sale.status !== "CANCELADO" && (
                           <button
@@ -93,7 +108,7 @@ export const SalesTable = () => {
                               setIsCancelModalOpen(true);
                             }}
                             className="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-955/30 text-rose-550 dark:text-rose-400 rounded-lg transition-all hover:text-rose-650"
-                            title="Desfazer/Estornar Venda"
+                            title="Desfazer/Estornar Venda Completa"
                           >
                             <Trash2 className="h-5 w-5" />
                           </button>
@@ -106,13 +121,29 @@ export const SalesTable = () => {
                       <tr className="bg-zinc-50/50 dark:bg-zinc-850/10">
                         <td colSpan={6} className="py-4 px-8 border-t border-b border-zinc-100 dark:border-zinc-800/40">
                           <div className="flex flex-col gap-3">
-                            <h4 className="text-xs font-extrabold text-zinc-400 uppercase tracking-wider">Itens do Cupom</h4>
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-xs font-extrabold text-zinc-400 uppercase tracking-wider">Itens do Cupom</h4>
+                              {sale.status !== "CANCELADO" && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSaleToReturn(sale);
+                                    setIsReturnModalOpen(true);
+                                  }}
+                                  className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 bg-amber-50 dark:bg-amber-950/30 px-3 py-1.5 rounded-xl border border-amber-200 dark:border-amber-900/40 transition-all cursor-pointer"
+                                >
+                                  <RotateCcw className="h-3.5 w-3.5" />
+                                  <span>Devolver Itens</span>
+                                </button>
+                              )}
+                            </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div className="divide-y divide-zinc-100 dark:divide-zinc-800/40">
                                 {sale.items.map((item: any, itemIdx) => {
                                   const product = item.productId as Product | undefined;
                                   const productName = product ? product.name : "Produto Removido";
                                   const subtotal = item.quantity * item.priceAtPurchase;
+                                  const returnedQty = item.returnedQuantity || 0;
 
                                   return (
                                     <div key={itemIdx} className="py-2.5 flex items-center justify-between text-xs font-semibold text-zinc-750 dark:text-zinc-300">
@@ -121,6 +152,11 @@ export const SalesTable = () => {
                                           {item.quantity}x
                                         </span>
                                         <span>{productName}</span>
+                                        {returnedQty > 0 && (
+                                          <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded-md border border-amber-200 dark:border-amber-900/40">
+                                            Devolvido: {returnedQty} un
+                                          </span>
+                                        )}
                                       </div>
                                       <div className="flex items-center gap-4 text-right">
                                         <span className="text-zinc-400">{formatCurrency(item.priceAtPurchase)}/un</span>
@@ -143,6 +179,12 @@ export const SalesTable = () => {
                                   <span>Evento ID:</span>
                                   <span className="font-mono text-zinc-450">{sale.eventId}</span>
                                 </div>
+                                {sale.refundedAmount && sale.refundedAmount > 0 ? (
+                                  <div className="flex justify-between text-amber-600 dark:text-amber-400 font-bold pt-1 border-t border-zinc-200 dark:border-zinc-700">
+                                    <span>Total Estornado:</span>
+                                    <span>- {formatCurrency(sale.refundedAmount)}</span>
+                                  </div>
+                                ) : null}
                               </div>
                             </div>
                           </div>

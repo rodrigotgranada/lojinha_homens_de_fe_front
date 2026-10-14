@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useCustomers } from "../context/CustomerContext";
 import { Modal } from "@/components/ui/Modal";
-import { ShoppingBag, ChevronDown, ChevronUp, Clock, AlertCircle, CheckCircle2, Check, Loader2, MessageCircle, Copy } from "lucide-react";
-import { Product } from "@/hooks/useApi";
+import { ShoppingBag, ChevronDown, ChevronUp, Clock, AlertCircle, CheckCircle2, Check, Loader2, MessageCircle, Copy, RotateCcw } from "lucide-react";
+import { Product, Sale } from "@/hooks/useApi";
 import { openWhatsAppCobranca, copyWhatsAppMessage } from "@/utils/whatsappUtils";
 import { paymentConfigService } from "@/services/paymentConfigService";
 import { PaymentConfig } from "@/types";
+import { ReturnItemsModal } from "@/components/ReturnItemsModal";
 
 export const CustomerHistoryModal = () => {
   const {
@@ -23,13 +24,16 @@ export const CustomerHistoryModal = () => {
     payAllSales,
     payingSaleId,
     payingAll,
-    markCustomerCharged
+    markCustomerCharged,
+    reloadCustomerSales
   } = useCustomers();
 
   const [expandedSaleId, setExpandedSaleId] = useState<string | null>(null);
   const [pixConfig, setPixConfig] = useState<PaymentConfig | null>(null);
   const [copiedMessage, setCopiedMessage] = useState(false);
   const [confirmingPayAll, setConfirmingPayAll] = useState(false);
+  const [saleToReturn, setSaleToReturn] = useState<Sale | null>(null);
+  const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
 
   useEffect(() => {
     if (isHistoryModalOpen) {
@@ -307,8 +311,26 @@ export const CustomerHistoryModal = () => {
                       </p>
                     </div>
 
-                    <div className="flex items-center justify-between sm:justify-end gap-3">
-                      <p className="font-black text-sm text-zinc-950 dark:text-white">{formatCurrency(sale.totalPrice)}</p>
+                    <div className="flex items-center justify-between sm:justify-end gap-2">
+                      <p className="font-black text-sm text-zinc-950 dark:text-white mr-1">{formatCurrency(sale.totalPrice)}</p>
+
+                      {/* Botão de Devolver Itens */}
+                      {sale.status !== "CANCELADO" && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            setSaleToReturn(sale);
+                            setIsReturnModalOpen(true);
+                          }}
+                          title="Devolver itens desta venda"
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 text-xs font-bold rounded-lg border border-amber-500/20 transition-all cursor-pointer"
+                        >
+                          <RotateCcw className="h-3.5 w-3.5" />
+                          <span className="hidden sm:inline">Devolver</span>
+                        </button>
+                      )}
 
                       {/* Botão de Quitar Venda Específica */}
                       {isPending && (
@@ -339,6 +361,7 @@ export const CustomerHistoryModal = () => {
                         const product = item.productId as Product | undefined;
                         const productName = product ? product.name : "Produto Removido";
                         const subtotal = item.quantity * item.priceAtPurchase;
+                        const returnedQty = item.returnedQuantity || 0;
 
                         return (
                           <div key={idx} className="py-2 flex items-center justify-between text-zinc-700 dark:text-zinc-300 font-semibold">
@@ -347,6 +370,11 @@ export const CustomerHistoryModal = () => {
                                 {item.quantity}x
                               </span>
                               <span>{productName}</span>
+                              {returnedQty > 0 && (
+                                <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded-md border border-amber-200 dark:border-amber-900/40">
+                                  Devolvido: {returnedQty} un
+                                </span>
+                              )}
                             </div>
                             <div className="text-right">
                               <span className="text-zinc-400 mr-2">{formatCurrency(item.priceAtPurchase)}/un</span>
@@ -355,6 +383,12 @@ export const CustomerHistoryModal = () => {
                           </div>
                         );
                       })}
+                      {sale.refundedAmount && sale.refundedAmount > 0 ? (
+                        <div className="py-2 flex items-center justify-between text-amber-600 dark:text-amber-400 font-bold">
+                          <span>Total Estornado:</span>
+                          <span>- {formatCurrency(sale.refundedAmount)}</span>
+                        </div>
+                      ) : null}
                     </div>
                   )}
                 </div>
@@ -363,6 +397,21 @@ export const CustomerHistoryModal = () => {
           </div>
         )}
       </div>
+
+      {/* Return Items Modal */}
+      {isReturnModalOpen && saleToReturn && (
+        <ReturnItemsModal
+          isOpen={isReturnModalOpen}
+          onClose={() => {
+            setIsReturnModalOpen(false);
+            setSaleToReturn(null);
+          }}
+          sale={saleToReturn}
+          onSuccess={() => {
+            reloadCustomerSales();
+          }}
+        />
+      )}
     </Modal>
   );
 };

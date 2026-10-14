@@ -30,6 +30,10 @@ export const useSalesState = () => {
   const [isPayModalOpen, setIsPayModalOpen] = useState(false);
   const [paying, setPaying] = useState(false);
 
+  // Return modal state
+  const [saleToReturn, setSaleToReturn] = useState<Sale | null>(null);
+  const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
+
   // Print & Export state
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [printType, setPrintType] = useState<"event-summary" | "customer-extrato" | null>(null);
@@ -236,6 +240,10 @@ export const useSalesState = () => {
     isPayModalOpen,
     setIsPayModalOpen,
     paying,
+    saleToReturn,
+    setSaleToReturn,
+    isReturnModalOpen,
+    setIsReturnModalOpen,
     isExportModalOpen,
     setIsExportModalOpen,
     printType,

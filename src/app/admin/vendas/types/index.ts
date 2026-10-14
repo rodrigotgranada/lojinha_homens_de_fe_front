@@ -21,6 +21,10 @@ export interface SalesContextProps {
   isPayModalOpen: boolean;
   setIsPayModalOpen: (open: boolean) => void;
   paying: boolean;
+  saleToReturn: Sale | null;
+  setSaleToReturn: (sale: Sale | null) => void;
+  isReturnModalOpen: boolean;
+  setIsReturnModalOpen: (open: boolean) => void;
   loadSales: () => Promise<void>;
   handleCancelSale: () => Promise<void>;
   handlePaySale: () => Promise<void>;

@@ -96,21 +96,47 @@ export interface CreateStockEntryPayload {
   createdBy?: string;
 }
 
+export interface SaleRefund {
+  amount: number;
+  method: "DINHEIRO" | "PIX" | "CREDITO" | "OUTRO";
+  date: string;
+  reason?: string;
+  operator?: string;
+}
+
 export interface SaleItem {
-  productId: string;
+  productId: string | Product;
   quantity: number;
   priceAtPurchase: number;
   costAtPurchase?: number;
+  returnedQuantity?: number;
 }
 
 export interface Sale {
   id: string;
-  customerId: string;
+  _id?: string;
+  customerId: string | User;
   eventId: string;
   items: SaleItem[];
   totalPrice: number;
   status: "PAGO" | "PENDENTE" | "CANCELADO";
+  refundedAmount?: number;
+  refunds?: SaleRefund[];
   createdAt: string;
+  updatedAt?: string;
+}
+
+export interface ReturnSaleItemDetail {
+  productId: string;
+  quantity: number;
+}
+
+export interface ReturnSaleItemsPayload {
+  items: ReturnSaleItemDetail[];
+  reason?: string;
+  refundMethod?: "DINHEIRO" | "PIX" | "CREDITO" | "OUTRO";
+  operatorId?: string;
+  operatorName?: string;
 }
 
 export interface RepaymentRecord {

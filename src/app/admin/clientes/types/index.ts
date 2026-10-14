@@ -39,4 +39,5 @@ export interface CustomerContextProps {
   payingSaleId: string | null;
   payingAll: boolean;
   markCustomerCharged: (customerId: string) => Promise<void>;
+  reloadCustomerSales: () => Promise<void>;
 }

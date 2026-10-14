@@ -364,6 +364,16 @@ export const useCustomerState = () => {
     });
   }, [customers, activeTab, searchTerm, roleFilter, sortField, sortDirection, customerSpentMap, customerPendingMap, customerPendingAmountMap]);
 
+  const reloadCustomerSales = useCallback(async () => {
+    if (selectedCustomer) {
+      const cId = (selectedCustomer.id || (selectedCustomer as any)._id || "").toString();
+      if (cId) {
+        await fetchCustomerSales(cId);
+        await loadCustomers();
+      }
+    }
+  }, [selectedCustomer, fetchCustomerSales, loadCustomers]);
+
   return {
     customers,
     loading,
@@ -404,6 +414,7 @@ export const useCustomerState = () => {
     payAllSales,
     payingSaleId,
     payingAll,
-    markCustomerCharged
+    markCustomerCharged,
+    reloadCustomerSales
   };
 };
