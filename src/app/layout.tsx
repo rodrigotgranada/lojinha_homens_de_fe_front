@@ -48,7 +48,7 @@ export default function RootLayout({
             {children}
           </main>
           <footer className="border-t border-zinc-100 dark:border-zinc-900 bg-white dark:bg-zinc-950/50 py-6 text-center text-xs text-zinc-400 dark:text-zinc-500 print:hidden">
-            &copy; {new Date().getFullYear()} Lojinha Virtual Retiros. Todos os direitos reservados.
+            &copy; {new Date().getFullYear()} Retiro Homens de Fé. Todos os direitos reservados.
           </footer>
         </AppProvider>
       </body>

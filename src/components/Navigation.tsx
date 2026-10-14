@@ -132,33 +132,52 @@ export const Navigation: React.FC = () => {
 
   const isAdmin = currentUser?.role === "ADMIN";
   const activeLink = adminLinks.find((l) => l.href === pathname);
-  const isPublicInscription = pathname === "/acampar" || pathname === "/trabalhar";
+
+  const isPublicByHost =
+    typeof window !== "undefined" &&
+    (window.location.hostname.toLowerCase().includes("acampar") ||
+      window.location.hostname.toLowerCase().includes("trabalhar"));
+
+  const isPublicInscription =
+    isPublicByHost ||
+    pathname === "/acampar" ||
+    pathname === "/trabalhar" ||
+    pathname.startsWith("/acampar") ||
+    pathname.startsWith("/trabalhar");
 
   if (isPublicInscription) {
     return (
       <header className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 sticky top-0 z-40 shadow-xs print:hidden">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+          {/* Left: Logo Homens de Fé + Nome do Evento Ativo */}
+          <div className="flex items-center gap-3 min-w-0">
             <img
               src="/icone.png"
               alt="Homens de Fé"
-              className="h-10 w-auto max-w-[80px] object-contain"
+              className="h-10 w-auto max-w-[85px] object-contain shrink-0"
             />
-            <div>
-              <span className="font-black text-base tracking-tight text-zinc-900 dark:text-zinc-100 block leading-tight">
-                Homens de Fé
-              </span>
-              <span className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider block">
-                {pathname === "/acampar" ? "Inscrição Acampamento" : "Inscrição Equipe de Trabalho"}
-              </span>
+            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-900/40 text-amber-900 dark:text-amber-200 text-xs font-extrabold shadow-xs truncate">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+              <span className="truncate">{activeEvent?.name || "Homens de Fé - Retiro"}</span>
             </div>
           </div>
 
+          {/* Right: Fullscreen + Theme Toggle (Sem login, Sem config, Sem link para home) */}
           <div className="flex items-center gap-2">
+            {/* Fullscreen Toggle */}
+            <button
+              onClick={toggleFullscreen}
+              className="p-2 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-800 cursor-pointer flex items-center justify-center transition-all"
+              title={isFullscreen ? "Sair da Tela Cheia" : "Tela Cheia"}
+            >
+              {isFullscreen ? <Minimize className="h-4.5 w-4.5" /> : <Maximize className="h-4.5 w-4.5" />}
+            </button>
+
+            {/* Theme Toggle */}
             <button
               onClick={() => handleThemeChange(theme === "dark" ? "light" : "dark")}
               className="p-2 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-800 cursor-pointer flex items-center justify-center transition-all"
-              title="Alternar Tema"
+              title={theme === "dark" ? "Mudar para Modo Claro" : "Mudar para Modo Escuro"}
             >
               {theme === "dark" ? <Sun className="h-4.5 w-4.5" /> : <Moon className="h-4.5 w-4.5" />}
             </button>
