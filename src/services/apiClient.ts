@@ -5,7 +5,25 @@ export function getApiBase(): string {
     if (useLocalApi && localApiUrl) {
       return localApiUrl;
     }
+
+    const hostname = window.location.hostname.toLowerCase();
+    const isLocalhost =
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname.endsWith(".local");
+
+    // If running in browser on a remote/cloud domain (Vercel, custom domain, etc.)
+    if (!isLocalhost) {
+      if (
+        process.env.NEXT_PUBLIC_API_URL &&
+        !process.env.NEXT_PUBLIC_API_URL.includes("localhost")
+      ) {
+        return process.env.NEXT_PUBLIC_API_URL;
+      }
+      return "https://lojinha-homens-de-fe-back.onrender.com";
+    }
   }
+
   const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "true";
   return USE_MOCK
     ? (process.env.NEXT_PUBLIC_MOCK_URL || "http://localhost:5006")

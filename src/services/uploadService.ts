@@ -10,10 +10,9 @@
 // import { firebaseApp } from "./firebaseConfig";
 // const storage = getStorage(firebaseApp);
 
+import { getApiBase } from "./apiClient";
+
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "true";
-const API_BASE = USE_MOCK
-  ? (process.env.NEXT_PUBLIC_MOCK_URL || "http://localhost:5006")
-  : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001");
 
 export const uploadService = {
   /**
@@ -29,7 +28,7 @@ export const uploadService = {
       const formData = new FormData();
       formData.append("image", file);
 
-      const res = await fetch(`${API_BASE}/products/${productId}/image`, {
+      const res = await fetch(`${getApiBase()}/products/${productId}/image`, {
         method: "POST",
         body: formData,
       });

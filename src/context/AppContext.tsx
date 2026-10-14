@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { Product, Event, User, useApi } from "@/hooks/useApi";
 import { io } from "socket.io-client";
+import { getApiBase } from "@/services/apiClient";
 
 export interface CartItem {
   product: Product;
@@ -88,7 +89,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return;
     }
 
-    const socketUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+    const socketUrl = getApiBase();
     const socket = io(socketUrl);
 
     socket.on("connect", () => {

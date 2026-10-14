@@ -1,12 +1,8 @@
 import { LogEntry } from "@/hooks/useApi";
-
-const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "true";
-const API_BASE = USE_MOCK
-  ? (process.env.NEXT_PUBLIC_MOCK_URL || "http://localhost:5006")
-  : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001");
+import { getApiBase } from "./apiClient";
 
 async function fetchJson<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const url = `${API_BASE}${endpoint}`;
+  const url = `${getApiBase()}${endpoint}`;
   const res = await fetch(url, {
     ...options,
     headers: {
