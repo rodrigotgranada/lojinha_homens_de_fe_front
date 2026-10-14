@@ -98,7 +98,7 @@ export interface CreateStockEntryPayload {
 
 export interface SaleRefund {
   amount: number;
-  method: "DINHEIRO" | "PIX" | "CREDITO" | "OUTRO";
+  method: "DINHEIRO" | "PIX" | "OUTRO";
   date: string;
   reason?: string;
   operator?: string;
@@ -134,7 +134,7 @@ export interface ReturnSaleItemDetail {
 export interface ReturnSaleItemsPayload {
   items: ReturnSaleItemDetail[];
   reason?: string;
-  refundMethod?: "DINHEIRO" | "PIX" | "CREDITO" | "OUTRO";
+  refundMethod?: "DINHEIRO" | "PIX" | "OUTRO";
   operatorId?: string;
   operatorName?: string;
 }

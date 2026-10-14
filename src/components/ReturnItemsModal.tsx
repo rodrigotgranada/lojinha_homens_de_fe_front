@@ -35,7 +35,7 @@ export const ReturnItemsModal: React.FC<ReturnItemsModalProps> = ({
   const { currentUser } = useApp();
   const [returnQuantities, setReturnQuantities] = useState<Record<string, number>>({});
   const [reason, setReason] = useState("");
-  const [refundMethod, setRefundMethod] = useState<"DINHEIRO" | "PIX" | "CREDITO">("DINHEIRO");
+  const [refundMethod, setRefundMethod] = useState<"DINHEIRO" | "PIX">("DINHEIRO");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -338,39 +338,28 @@ export const ReturnItemsModal: React.FC<ReturnItemsModalProps> = ({
             <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
               Forma de Devolução do Dinheiro ao Cliente:
             </label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => setRefundMethod("DINHEIRO")}
-                className={`py-2 px-3 rounded-xl border text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                className={`py-2.5 px-3 rounded-xl border text-xs font-black flex items-center justify-center gap-2 transition-all cursor-pointer ${
                   refundMethod === "DINHEIRO"
                     ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
                     : "bg-white dark:bg-zinc-850 text-zinc-700 dark:text-zinc-300 border-zinc-250 dark:border-zinc-700 hover:bg-zinc-50"
                 }`}
               >
-                💵 Dinheiro
+                💵 Dinheiro em Espécie
               </button>
               <button
                 type="button"
                 onClick={() => setRefundMethod("PIX")}
-                className={`py-2 px-3 rounded-xl border text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                className={`py-2.5 px-3 rounded-xl border text-xs font-black flex items-center justify-center gap-2 transition-all cursor-pointer ${
                   refundMethod === "PIX"
                     ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
                     : "bg-white dark:bg-zinc-850 text-zinc-700 dark:text-zinc-300 border-zinc-250 dark:border-zinc-700 hover:bg-zinc-50"
                 }`}
               >
                 📱 PIX
-              </button>
-              <button
-                type="button"
-                onClick={() => setRefundMethod("CREDITO")}
-                className={`py-2 px-3 rounded-xl border text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                  refundMethod === "CREDITO"
-                    ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
-                    : "bg-white dark:bg-zinc-850 text-zinc-700 dark:text-zinc-300 border-zinc-250 dark:border-zinc-700 hover:bg-zinc-50"
-                }`}
-              >
-                🎟️ Crédito
               </button>
             </div>
           </div>
