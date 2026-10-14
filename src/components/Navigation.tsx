@@ -13,9 +13,10 @@ import {
   Moon,
   Monitor,
   Maximize,
-  Minimize
+  Minimize,
+  Compass,
 } from "lucide-react";
-import { adminLinks } from "./navigation/navLinks";
+import { adminLinks, eventScopeLinks, globalScopeLinks } from "./navigation/navLinks";
 import { EventBadgeSelector } from "./navigation/EventBadgeSelector";
 import { UserMenuDropdown } from "./navigation/UserMenuDropdown";
 import { MobileNavDrawer } from "./navigation/MobileNavDrawer";
@@ -206,6 +207,22 @@ export const Navigation: React.FC = () => {
                 <span className="hidden sm:block">Lojinha Retiro</span>
               </Link>
 
+              {/* Desktop: Direct "Meus Retiros" Link */}
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className={`hidden lg:flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
+                    pathname === "/admin"
+                      ? "bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-950/40 dark:border-indigo-900/40 dark:text-indigo-300 shadow-2xs"
+                      : "border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                  }`}
+                  title="Portal de Retiros e Edições"
+                >
+                  <Compass className="w-3.5 h-3.5 text-indigo-500" />
+                  <span>Meus Retiros</span>
+                </Link>
+              )}
+
               {/* Desktop: Navigation dropdown */}
               {isAdmin && (
                 <div className="hidden sm:block relative" ref={navDropRef}>
@@ -221,8 +238,8 @@ export const Navigation: React.FC = () => {
                     }`}
                   >
                     {activeLink?.icon ?? <LayoutDashboard className="h-4 w-4" />}
-                    <span className="max-w-[120px] truncate">
-                      {activeLink?.name ?? "Navegar"}
+                    <span className="max-w-[140px] truncate">
+                      {activeLink?.name ?? "Módulos"}
                     </span>
                     <ChevronDown
                       className={`h-3.5 w-3.5 transition-transform shrink-0 ${
@@ -232,28 +249,67 @@ export const Navigation: React.FC = () => {
                   </button>
 
                   {navDropOpen && (
-                    <div className="absolute left-0 top-full mt-2 w-52 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl shadow-xl overflow-hidden z-50 py-1.5">
-                      {adminLinks.map((link) => {
-                        const isActive = pathname === link.href;
-                        return (
-                          <Link
-                            key={link.href}
-                            href={link.href}
-                            onClick={() => setNavDropOpen(false)}
-                            className={`flex items-center gap-3 px-4 py-2.5 text-sm font-semibold transition-all ${
-                              isActive
-                                ? "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400"
-                                : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800"
-                            }`}
-                          >
-                            <span className="opacity-60">{link.icon}</span>
-                            {link.name}
-                            {isActive && (
-                              <span className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                            )}
-                          </Link>
-                        );
-                      })}
+                    <div className="absolute left-0 top-full mt-2 w-72 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden z-50 p-2 space-y-2 animate-in fade-in-0 zoom-in-95 duration-150">
+                      
+                      {/* Section 1: Retiro Atual */}
+                      <div>
+                        <div className="px-3 py-1.5 flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-amber-800 dark:text-amber-300 bg-amber-50/80 dark:bg-amber-950/40 rounded-xl border border-amber-200/60 dark:border-amber-900/40">
+                          <span className="truncate">Retiro: {activeEvent?.name || "Edição Atual"}</span>
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                        </div>
+                        <div className="mt-1 space-y-0.5">
+                          {eventScopeLinks.map((link) => {
+                            const isActive = pathname === link.href;
+                            return (
+                              <Link
+                                key={link.href}
+                                href={link.href}
+                                onClick={() => setNavDropOpen(false)}
+                                className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                                  isActive
+                                    ? "bg-amber-500 text-white font-bold shadow-xs"
+                                    : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                }`}
+                              >
+                                <span className={isActive ? "text-white" : "text-amber-600 dark:text-amber-400"}>
+                                  {link.icon}
+                                </span>
+                                <span>{link.name}</span>
+                                {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white" />}
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Section 2: Recursos Globais */}
+                      <div className="pt-1.5 border-t border-zinc-150 dark:border-zinc-800">
+                        <div className="px-3 py-1 text-[10px] font-black uppercase tracking-wider text-zinc-400">
+                          Recursos Globais (Geral)
+                        </div>
+                        <div className="mt-1 space-y-0.5">
+                          {globalScopeLinks.map((link) => {
+                            const isActive = pathname === link.href;
+                            return (
+                              <Link
+                                key={link.href}
+                                href={link.href}
+                                onClick={() => setNavDropOpen(false)}
+                                className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                                  isActive
+                                    ? "bg-indigo-600 text-white font-bold shadow-xs"
+                                    : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                }`}
+                              >
+                                <span className={isActive ? "text-white" : "text-zinc-400"}>{link.icon}</span>
+                                <span>{link.name}</span>
+                                {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white" />}
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      </div>
+
                     </div>
                   )}
                 </div>

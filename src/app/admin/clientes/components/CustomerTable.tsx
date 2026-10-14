@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useCustomers } from "../context/CustomerContext";
-import { ShoppingCart, Edit, Trash2, RotateCcw, ArrowUp, ArrowDown, ArrowUpDown, X, AlertTriangle, Check, Search, Clock } from "lucide-react";
+import { ShoppingCart, Edit, Trash2, RotateCcw, ArrowUp, ArrowDown, ArrowUpDown, X, AlertTriangle, Check, Search, Clock, Sparkles } from "lucide-react";
 import { User } from "@/hooks/useApi";
+import { User360Modal } from "@/components/User360Modal";
 
 export const CustomerTable = () => {
   const {
@@ -29,6 +30,10 @@ export const CustomerTable = () => {
   const [customerToToggle, setCustomerToToggle] = useState<User | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [toggling, setToggling] = useState(false);
+
+  // User 360 Modal
+  const [user360Id, setUser360Id] = useState<string | null>(null);
+  const [showUser360, setShowUser360] = useState(false);
 
   const formatCpf = (cpf: string) => {
     const clean = cpf.replace(/\D/g, "");
@@ -248,6 +253,18 @@ export const CustomerTable = () => {
                           <ShoppingCart className="h-4 w-4" />
                         </button>
 
+                        {/* Ficha 360° Button */}
+                        <button
+                          onClick={() => {
+                            setUser360Id(customer.id);
+                            setShowUser360(true);
+                          }}
+                          className="p-1.5 hover:bg-amber-50 dark:hover:bg-amber-955/20 text-amber-600 dark:text-amber-400 rounded-lg transition-all cursor-pointer inline-flex items-center justify-center"
+                          title="Ficha 360° e Histórico em Retiros"
+                        >
+                          <Sparkles className="h-4 w-4" />
+                        </button>
+
                         {/* Soft Delete / Toggle Active Status */}
                         {activeTab === "active" ? (
                           <button
@@ -348,6 +365,13 @@ export const CustomerTable = () => {
           </div>
         </div>
       )}
+
+      {/* USER 360° MODAL */}
+      <User360Modal
+        userId={user360Id}
+        isOpen={showUser360}
+        onClose={() => setShowUser360(false)}
+      />
     </>
   );
 };

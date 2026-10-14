@@ -27,7 +27,9 @@ import {
   RefreshCw,
   AlertCircle,
   ExternalLink,
+  ArrowLeftRight,
 } from "lucide-react";
+import { User360Modal } from "@/components/User360Modal";
 
 export default function AdminInscricoesPage() {
   const { currentUser, activeEvent } = useApp();
@@ -43,6 +45,15 @@ export default function AdminInscricoesPage() {
 
   // Selected Detail Modal
   const [selectedItem, setSelectedItem] = useState<InscriptionParticipant | null>(null);
+
+  // User 360 Modal
+  const [user360Id, setUser360Id] = useState<string | null>(null);
+  const [showUser360, setShowUser360] = useState(false);
+
+  const handleOpen360 = (userId: string) => {
+    setUser360Id(userId);
+    setShowUser360(true);
+  };
 
   // Action Loading
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
@@ -115,6 +126,29 @@ export default function AdminInscricoesPage() {
     }
   };
 
+  const handleToggleType = async (item: InscriptionParticipant) => {
+    const nextType: "ACAMPANTE" | "TRABALHO" = item.type === "ACAMPANTE" ? "TRABALHO" : "ACAMPANTE";
+    const nextLabel = nextType === "ACAMPANTE" ? "Acampante" : "Equipe de Trabalho";
+
+    try {
+      setActionLoadingId(item._id || item.id);
+      const updated = await inscriptionService.updateParticipantType(
+        item._id || item.id,
+        nextType
+      );
+      setInscriptions((prev) =>
+        prev.map((i) => ((i._id || i.id) === (item._id || item.id) ? updated : i))
+      );
+      if (selectedItem && (selectedItem._id || selectedItem.id) === (item._id || item.id)) {
+        setSelectedItem(updated);
+      }
+    } catch (err: any) {
+      alert(`Erro ao alterar categoria para ${nextLabel}: ${err?.message || "Tente novamente."}`);
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
   // Metrics
   const stats = useMemo(() => {
     const total = inscriptions.length;
@@ -122,8 +156,8 @@ export default function AdminInscricoesPage() {
     const confirmados = inscriptions.filter((i) => i.status === "CONFIRMADO").length;
     const cancelados = inscriptions.filter((i) => i.status === "CANCELADO").length;
     const acampantes = inscriptions.filter((i) => i.type === "ACAMPANTE").length;
-    const servos = inscriptions.filter((i) => i.type === "TRABALHO").length;
-    return { total, pendentes, confirmados, cancelados, acampantes, servos };
+    const trabalhadores = inscriptions.filter((i) => i.type === "TRABALHO").length;
+    return { total, pendentes, confirmados, cancelados, acampantes, trabalhadores };
   }, [inscriptions]);
 
   // Filtered List
@@ -181,7 +215,7 @@ export default function AdminInscricoesPage() {
             Gestão de Inscrições
           </h1>
           <p className="text-zinc-500 dark:text-zinc-400 text-sm">
-            Revise as inscrições públicas de acampantes e servos, aprove e gerencie vagas do retiro.
+            Revise as inscrições públicas de acampantes e equipe de trabalho, aprove e gerencie vagas do retiro.
           </p>
         </div>
 
@@ -211,7 +245,7 @@ export default function AdminInscricoesPage() {
           </div>
           <div className="text-2xl font-black text-zinc-900 dark:text-zinc-50">{stats.total}</div>
           <div className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-1">
-            {stats.acampantes} acampantes • {stats.servos} servos
+            {stats.acampantes} acampantes • {stats.trabalhadores} trabalhadores
           </div>
         </div>
 
@@ -324,7 +358,7 @@ export default function AdminInscricoesPage() {
             }`}
           >
             <Briefcase className="w-3.5 h-3.5" />
-            Servos ({stats.servos})
+            Equipe de Trabalho ({stats.trabalhadores})
           </button>
         </div>
       </div>
@@ -456,6 +490,28 @@ export default function AdminInscricoesPage() {
                       <Eye className="w-4 h-4" />
                     </button>
 
+                    {/* Ficha 360 Button */}
+                    <button
+                      onClick={() => {
+                        const uid = (item.userId as any)?._id || (item.userId as any)?.id || item.userId;
+                        if (uid) handleOpen360(uid);
+                      }}
+                      title="Ficha 360° e Histórico de Retiros"
+                      className="p-2.5 rounded-xl border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-all cursor-pointer"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                    </button>
+
+                    {/* Toggle Camper / Staff Button */}
+                    <button
+                      onClick={() => handleToggleType(item)}
+                      disabled={isActionLoading}
+                      title={item.type === "ACAMPANTE" ? "Mudar para Equipe de Trabalho" : "Mudar para Acampante"}
+                      className="p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-amber-600 dark:hover:text-amber-400 hover:border-amber-300 transition-all cursor-pointer disabled:opacity-50"
+                    >
+                      <ArrowLeftRight className="w-4 h-4" />
+                    </button>
+
                     {/* Action buttons */}
                     {isPendente && (
                       <>
@@ -512,7 +568,7 @@ export default function AdminInscricoesPage() {
             <div className="flex items-start justify-between gap-4 pb-4 border-b border-zinc-100 dark:border-zinc-800">
               <div className="space-y-1">
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400">
-                  Ficha de {selectedItem.type === "ACAMPANTE" ? "Acampante" : "Servo"}
+                  Ficha de {selectedItem.type === "ACAMPANTE" ? "Acampante" : "Trabalhador"}
                 </span>
                 <h2 className="text-xl font-black text-zinc-900 dark:text-zinc-50">
                   {(selectedItem.userId as any)?.firstName} {(selectedItem.userId as any)?.lastName}
@@ -680,20 +736,47 @@ export default function AdminInscricoesPage() {
 
             {/* Modal Actions */}
             <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-3">
-              {(selectedItem.userId as any)?.phone && (
+              <div className="flex flex-wrap items-center gap-2">
+                {(selectedItem.userId as any)?.phone && (
+                  <button
+                    onClick={() =>
+                      openWhatsApp(
+                        (selectedItem.userId as any)?.phone,
+                        (selectedItem.userId as any)?.firstName
+                      )
+                    }
+                    className="px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    WhatsApp
+                  </button>
+                )}
+
+                {/* 360 Button */}
                 <button
-                  onClick={() =>
-                    openWhatsApp(
-                      (selectedItem.userId as any)?.phone,
-                      (selectedItem.userId as any)?.firstName
-                    )
-                  }
-                  className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-xs"
+                  onClick={() => {
+                    const uid =
+                      (selectedItem.userId as any)?._id ||
+                      (selectedItem.userId as any)?.id ||
+                      selectedItem.userId;
+                    if (uid) handleOpen360(uid);
+                  }}
+                  className="px-3.5 py-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900/40 font-bold text-xs flex items-center gap-1.5 cursor-pointer hover:bg-indigo-100 transition-all shadow-xs"
                 >
-                  <MessageCircle className="w-4 h-4" />
-                  Chamar no WhatsApp
+                  <Sparkles className="w-4 h-4" />
+                  Ficha 360°
                 </button>
-              )}
+
+                {/* Toggle Type Button */}
+                <button
+                  onClick={() => handleToggleType(selectedItem)}
+                  disabled={actionLoadingId === (selectedItem._id || selectedItem.id)}
+                  className="px-3.5 py-2.5 rounded-xl border border-amber-300 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 font-bold text-xs flex items-center gap-1.5 cursor-pointer hover:bg-amber-100 transition-all disabled:opacity-50"
+                >
+                  <ArrowLeftRight className="w-4 h-4" />
+                  {selectedItem.type === "ACAMPANTE" ? "Mudar para Trabalho" : "Mudar para Acampante"}
+                </button>
+              </div>
 
               <div className="flex items-center gap-2 ml-auto">
                 {selectedItem.status === "PENDENTE" && (
@@ -726,6 +809,14 @@ export default function AdminInscricoesPage() {
           </div>
         </div>
       )}
+
+      {/* USER 360° MODAL */}
+      <User360Modal
+        userId={user360Id}
+        isOpen={showUser360}
+        onClose={() => setShowUser360(false)}
+      />
     </div>
   );
 }
+

@@ -210,7 +210,7 @@ export default function TrabalharPage() {
 
           <div className="space-y-2">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300">
-              Servo Registrado
+              Trabalhador Registrado
             </span>
             <h1 className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-zinc-50">
               Deus Abençoe sua Disponibilidade!
@@ -254,7 +254,7 @@ export default function TrabalharPage() {
           <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-2xl p-4 text-xs text-amber-900 dark:text-amber-300 text-left leading-relaxed flex items-start gap-3">
             <Sparkles className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold mb-1">Equipe e Reuniões de Servos</p>
+              <p className="font-bold mb-1">Equipe e Reuniões de Alinhamento</p>
               <p>
                 Os coordenadores entrarão em contato para informar datas de reuniões de alinhamento,
                 organização das equipes e detalhes da montagem do retiro.
@@ -286,11 +286,11 @@ export default function TrabalharPage() {
         <div className="relative z-10 space-y-3">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-xs text-amber-100 text-xs font-bold tracking-wider uppercase">
             <Briefcase className="w-3.5 h-3.5" />
-            Equipe de Trabalho / Servos
+            Equipe de Trabalho
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-            {activeEvent?.name ? activeEvent.name : "Homens de Fé - Equipe de Servos"}
+            {activeEvent?.name ? activeEvent.name : "Homens de Fé - Equipe de Trabalho"}
           </h1>
 
           <p className="text-amber-100 text-sm leading-relaxed max-w-xl">
@@ -338,7 +338,7 @@ export default function TrabalharPage() {
             </div>
             <div>
               <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
-                1. Identificação do Servo
+                1. Identificação do Trabalhador
               </h2>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
                 Seus dados cadastrais

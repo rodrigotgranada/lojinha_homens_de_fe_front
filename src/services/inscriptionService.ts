@@ -124,4 +124,14 @@ export const inscriptionService = {
       method: "PATCH",
     });
   },
+
+  updateParticipantType: async (
+    id: string,
+    type: "ACAMPANTE" | "TRABALHO"
+  ): Promise<InscriptionParticipant> => {
+    return apiFetch<InscriptionParticipant>(`/inscriptions/${id}/type`, {
+      method: "PATCH",
+      body: JSON.stringify({ type }),
+    });
+  },
 };

@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { X, LogOut, LogIn, Shield, Zap, Settings, Sun, Moon, Monitor } from "lucide-react";
 import { User, Event } from "@/types";
-import { NavLinkItem } from "./navLinks";
+import { NavLinkItem, eventScopeLinks, globalScopeLinks } from "./navLinks";
 
 interface MobileNavDrawerProps {
   isOpen: boolean;
@@ -67,27 +67,64 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5">
-          {isAdmin &&
-            adminLinks.map((link) => {
-              const isActive = pathname === link.href;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={onClose}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
-                    isActive
-                      ? "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400"
-                      : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-850"
-                  }`}
-                >
-                  <span className={isActive ? "text-indigo-500" : "text-zinc-400"}>{link.icon}</span>
-                  {link.name}
-                  {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />}
-                </Link>
-              );
-            })}
+        <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
+          {isAdmin && (
+            <>
+              {/* Event Scoped */}
+              <div className="space-y-1">
+                <div className="px-3 py-1 text-[10px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-955/40 rounded-lg flex items-center justify-between">
+                  <span>Operações do Retiro</span>
+                </div>
+                {eventScopeLinks.map((link) => {
+                  const isActive = pathname === link.href;
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={onClose}
+                      className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                        isActive
+                          ? "bg-amber-500 text-white font-bold shadow-xs"
+                          : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-850"
+                      }`}
+                    >
+                      <span className={isActive ? "text-white" : "text-amber-600 dark:text-amber-400"}>
+                        {link.icon}
+                      </span>
+                      {link.name}
+                      {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white shrink-0" />}
+                    </Link>
+                  );
+                })}
+              </div>
+
+              {/* Global Scoped */}
+              <div className="space-y-1 pt-2 border-t border-zinc-150 dark:border-zinc-800">
+                <div className="px-3 py-1 text-[10px] font-black uppercase tracking-wider text-zinc-400">
+                  <span>Recursos Globais (Geral)</span>
+                </div>
+                {globalScopeLinks.map((link) => {
+                  const isActive = pathname === link.href;
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={onClose}
+                      className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                        isActive
+                          ? "bg-indigo-600 text-white font-bold shadow-xs"
+                          : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-850"
+                      }`}
+                    >
+                      <span className={isActive ? "text-white" : "text-zinc-400"}>{link.icon}</span>
+                      {link.name}
+                      {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white shrink-0" />}
+                    </Link>
+                  );
+                })}
+              </div>
+            </>
+          )}
 
           {!currentUser && (
             <Link
