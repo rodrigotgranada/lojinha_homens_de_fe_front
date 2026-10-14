@@ -28,6 +28,8 @@ import {
   AlertCircle,
   ExternalLink,
   ArrowLeftRight,
+  ArrowDownAZ,
+  ArrowUpZA,
 } from "lucide-react";
 import { User360Modal } from "@/components/User360Modal";
 
@@ -38,10 +40,11 @@ export default function AdminInscricoesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Filters
+  // Filters & Sorting
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<"ALL" | "ACAMPANTE" | "TRABALHO">("ALL");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "PENDENTE" | "CONFIRMADO" | "CANCELADO">("ALL");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "recent">("asc");
 
   // Selected Detail Modal
   const [selectedItem, setSelectedItem] = useState<InscriptionParticipant | null>(null);
@@ -160,9 +163,16 @@ export default function AdminInscricoesPage() {
     return { total, pendentes, confirmados, cancelados, acampantes, trabalhadores };
   }, [inscriptions]);
 
-  // Filtered List
+  const normalizeText = (text: string = "") =>
+    text
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim();
+
+  // Filtered & Sorted List (Alphabetical by default)
   const filteredList = useMemo(() => {
-    return inscriptions.filter((item) => {
+    const result = inscriptions.filter((item) => {
       // Type filter
       if (typeFilter !== "ALL" && item.type !== typeFilter) return false;
 
@@ -171,17 +181,30 @@ export default function AdminInscricoesPage() {
 
       // Search term
       if (search.trim()) {
-        const term = search.toLowerCase().trim();
-        const user = item.userId as any;
-        const fullName = `${user?.firstName || ""} ${user?.lastName || ""}`.toLowerCase();
-        const cpf = user?.cpf || "";
-        const phone = user?.phone || "";
-        const city = (user?.city || "").toLowerCase();
+        const term = normalizeText(search);
+        const termDigits = search.replace(/\D/g, "");
+        const user = (item.userId as any) || item;
+        const fullName = normalizeText(`${user?.firstName || ""} ${user?.lastName || ""}`);
+        const city = normalizeText(user?.city || "");
+        const parish = normalizeText(user?.parish || "");
+        const email = normalizeText(user?.email || "");
+        const rawCpf = (user?.cpf || "").replace(/\D/g, "");
+        const rawPhone = (user?.phone || "").replace(/\D/g, "");
+
+        const matchesName = fullName.includes(term);
+        const matchesCity = city.includes(term);
+        const matchesParish = parish.includes(term);
+        const matchesEmail = email.includes(term);
+        const matchesCpf = termDigits.length > 0 && rawCpf.includes(termDigits);
+        const matchesPhone = termDigits.length > 0 && rawPhone.includes(termDigits);
+
         if (
-          !fullName.includes(term) &&
-          !cpf.includes(term.replace(/\D/g, "")) &&
-          !phone.includes(term) &&
-          !city.includes(term)
+          !matchesName &&
+          !matchesCity &&
+          !matchesParish &&
+          !matchesEmail &&
+          !matchesCpf &&
+          !matchesPhone
         ) {
           return false;
         }
@@ -189,7 +212,24 @@ export default function AdminInscricoesPage() {
 
       return true;
     });
-  }, [inscriptions, typeFilter, statusFilter, search]);
+
+    // Sorting: Alphabetical (A-Z or Z-A) or Recent
+    return [...result].sort((a, b) => {
+      if (sortOrder === "recent") {
+        const dateA = new Date(a.submittedAt || a.createdAt || 0).getTime();
+        const dateB = new Date(b.submittedAt || b.createdAt || 0).getTime();
+        return dateB - dateA;
+      }
+
+      const userA = (a.userId as any) || a;
+      const userB = (b.userId as any) || b;
+      const nameA = `${userA?.firstName || ""} ${userA?.lastName || ""}`.trim();
+      const nameB = `${userB?.firstName || ""} ${userB?.lastName || ""}`.trim();
+
+      const cmp = nameA.localeCompare(nameB, "pt-BR", { sensitivity: "base" });
+      return sortOrder === "asc" ? cmp : -cmp;
+    });
+  }, [inscriptions, typeFilter, statusFilter, search, sortOrder]);
 
   const openWhatsApp = (phone?: string, name?: string) => {
     if (!phone) return;
@@ -304,64 +344,139 @@ export default function AdminInscricoesPage() {
         </div>
       </div>
 
-      {/* Filters Bar */}
-      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 shadow-xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+      {/* Filters & Sorting Bar */}
+      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 shadow-xs flex flex-col xl:flex-row gap-3 items-stretch xl:items-center justify-between">
         {/* Search */}
-        <div className="relative flex-1">
+        <div className="relative flex-1 min-w-[260px]">
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Pesquisar por nome, CPF, cidade ou telefone..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/80 text-zinc-900 dark:text-zinc-100 text-sm focus:outline-hidden focus:ring-2 focus:ring-indigo-500 transition-all"
+            className="w-full pl-10 pr-9 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/80 text-zinc-900 dark:text-zinc-100 text-sm focus:outline-hidden focus:ring-2 focus:ring-indigo-500 transition-all placeholder:text-zinc-400"
           />
           <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3" />
           {search && (
             <button
               onClick={() => setSearch("")}
-              className="absolute right-3 top-3 text-zinc-400 hover:text-zinc-600"
+              className="absolute right-3 top-3 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer p-0.5"
+              title="Limpar pesquisa"
             >
               <X className="w-4 h-4" />
             </button>
           )}
         </div>
 
-        {/* Type Filter Buttons */}
-        <div className="flex items-center gap-1.5 p-1 bg-zinc-100 dark:bg-zinc-800 rounded-xl self-start md:self-auto">
-          <button
-            onClick={() => setTypeFilter("ALL")}
-            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-              typeFilter === "ALL"
-                ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs"
-                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900"
-            }`}
-          >
-            Todos ({stats.total})
-          </button>
-          <button
-            onClick={() => setTypeFilter("ACAMPANTE")}
-            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
-              typeFilter === "ACAMPANTE"
-                ? "bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs"
-                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900"
-            }`}
-          >
-            <Tent className="w-3.5 h-3.5" />
-            Acampantes ({stats.acampantes})
-          </button>
-          <button
-            onClick={() => setTypeFilter("TRABALHO")}
-            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
-              typeFilter === "TRABALHO"
-                ? "bg-white dark:bg-zinc-900 text-amber-600 dark:text-amber-400 shadow-xs"
-                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900"
-            }`}
-          >
-            <Briefcase className="w-3.5 h-3.5" />
-            Equipe de Trabalho ({stats.trabalhadores})
-          </button>
+        {/* Controls Container (Type Filter + Sort) */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Type Filter Buttons */}
+          <div className="flex items-center gap-1 p-1 bg-zinc-100 dark:bg-zinc-800 rounded-xl">
+            <button
+              onClick={() => setTypeFilter("ALL")}
+              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                typeFilter === "ALL"
+                  ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs"
+                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+              }`}
+            >
+              Todos ({stats.total})
+            </button>
+            <button
+              onClick={() => setTypeFilter("ACAMPANTE")}
+              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                typeFilter === "ACAMPANTE"
+                  ? "bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs"
+                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+              }`}
+            >
+              <Tent className="w-3.5 h-3.5" />
+              Acampantes ({stats.acampantes})
+            </button>
+            <button
+              onClick={() => setTypeFilter("TRABALHO")}
+              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                typeFilter === "TRABALHO"
+                  ? "bg-white dark:bg-zinc-900 text-amber-600 dark:text-amber-400 shadow-xs"
+                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+              }`}
+            >
+              <Briefcase className="w-3.5 h-3.5" />
+              Equipe ({stats.trabalhadores})
+            </button>
+          </div>
+
+          {/* Sort Controls (A-Z / Z-A / Recentes) */}
+          <div className="flex items-center gap-1 p-1 bg-zinc-100 dark:bg-zinc-800 rounded-xl">
+            <span className="text-[11px] font-bold text-zinc-400 px-1.5 hidden sm:inline">
+              Ordem:
+            </span>
+            <button
+              onClick={() => setSortOrder("asc")}
+              className={`px-2.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                sortOrder === "asc"
+                  ? "bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs"
+                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+              }`}
+              title="Ordem Alfabética Crescente (A a Z)"
+            >
+              <ArrowDownAZ className="w-4 h-4" />
+              <span>A → Z</span>
+            </button>
+            <button
+              onClick={() => setSortOrder("desc")}
+              className={`px-2.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                sortOrder === "desc"
+                  ? "bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs"
+                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+              }`}
+              title="Ordem Alfabética Decrescente (Z a A)"
+            >
+              <ArrowUpZA className="w-4 h-4" />
+              <span>Z → A</span>
+            </button>
+            <button
+              onClick={() => setSortOrder("recent")}
+              className={`px-2.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                sortOrder === "recent"
+                  ? "bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs"
+                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+              }`}
+              title="Mais recentes primeiro (Data de envio)"
+            >
+              <Clock className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Recentes</span>
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Filter summary bar if any filter is active */}
+      {(search.trim() || typeFilter !== "ALL" || statusFilter !== "ALL") && (
+        <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 px-2 -mt-2">
+          <span>
+            Exibindo <strong>{filteredList.length}</strong> de {stats.total} inscrições
+            {search.trim() && (
+              <> para &ldquo;<strong>{search}</strong>&rdquo;</>
+            )}
+            {typeFilter !== "ALL" && (
+              <> ({typeFilter === "ACAMPANTE" ? "Acampantes" : "Equipe de Trabalho"})</>
+            )}
+            {statusFilter !== "ALL" && (
+              <> [{statusFilter}]</>
+            )}
+          </span>
+          <button
+            onClick={() => {
+              setSearch("");
+              setTypeFilter("ALL");
+              setStatusFilter("ALL");
+            }}
+            className="text-indigo-600 dark:text-indigo-400 hover:underline font-bold cursor-pointer"
+          >
+            Limpar Filtros
+          </button>
+        </div>
+      )}
 
       {/* Error View */}
       {error && (
