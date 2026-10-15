@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useEvents } from "../context/EventContext";
 import { Event } from "@/hooks/useApi";
 import {
@@ -8,7 +8,12 @@ import {
   Clock,
   CheckCircle,
   Edit2,
-  Ban
+  Ban,
+  Copy,
+  Check,
+  ExternalLink,
+  Tent,
+  Briefcase
 } from "lucide-react";
 
 const formatDate = (dateStr?: string): string => {
@@ -63,6 +68,18 @@ export const EventList = () => {
     handleOpenEditModal
   } = useEvents();
 
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  const copyToClipboard = (key: string, path: string) => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const fullUrl = `${origin}${path}`;
+    navigator.clipboard.writeText(fullUrl);
+    setCopiedKey(key);
+    setTimeout(() => {
+      setCopiedKey(null);
+    }, 2000);
+  };
+
   if (loadingContent) {
     return (
       <div className="flex-1 flex items-center justify-center py-20">
@@ -85,6 +102,7 @@ export const EventList = () => {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {events.map((event) => {
         const status = event.status ?? (event.isActive ? "ATIVO" : "PROGRAMADO");
+        const slug = event.slug || event.id;
 
         // Stripe color per status
         const stripeClass =
@@ -106,7 +124,7 @@ export const EventList = () => {
         return (
           <div
             key={event.id}
-            className={`bg-white dark:bg-zinc-900 border rounded-2xl flex flex-col justify-between transition-all shadow-xs relative overflow-hidden pb-5 ${borderClass}`}
+            className={`bg-white dark:bg-zinc-900 border rounded-2xl flex flex-col justify-between transition-all shadow-xs relative overflow-hidden pb-4 ${borderClass}`}
           >
             {/* Top accent stripe */}
             <div className={`h-1 w-full ${stripeClass}`} />
@@ -114,7 +132,14 @@ export const EventList = () => {
             <div className="px-5 pt-4 space-y-3">
               {/* Status + Edit button */}
               <div className="flex items-start justify-between gap-2">
-                <StatusBadge event={event} />
+                <div className="flex items-center gap-2 flex-wrap">
+                  <StatusBadge event={event} />
+                  {event.city && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
+                      {event.city}
+                    </span>
+                  )}
+                </div>
                 <button
                   onClick={() => handleOpenEditModal(event)}
                   className="p-1.5 rounded-lg text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-all cursor-pointer shrink-0 border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800"
@@ -148,6 +173,73 @@ export const EventList = () => {
                 ) : (
                   <span className="italic text-zinc-400 dark:text-zinc-600">Local não informado</span>
                 )}
+              </div>
+
+              {/* Public Inscription Links with 1-click copy */}
+              <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800/80 space-y-2">
+                <span className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider block">
+                  Links Públicos com Slug
+                </span>
+
+                <div className="grid grid-cols-2 gap-2">
+                  {/* Acampar */}
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(`acampar-${event.id}`, `/acampar/${slug}`)}
+                      className="flex-1 flex items-center justify-between gap-1.5 px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 text-xs font-bold transition-all cursor-pointer"
+                      title="Copiar link para acampantes"
+                    >
+                      <span className="flex items-center gap-1 truncate">
+                        <Tent className="w-3.5 h-3.5 shrink-0" />
+                        <span>Acampar</span>
+                      </span>
+                      {copiedKey === `acampar-${event.id}` ? (
+                        <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      ) : (
+                        <Copy className="w-3.5 h-3.5 shrink-0 opacity-70" />
+                      )}
+                    </button>
+                    <a
+                      href={`/acampar/${slug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-1.5 rounded-lg text-zinc-400 hover:text-indigo-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                      title="Abrir página"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+
+                  {/* Trabalhar */}
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(`trabalhar-${event.id}`, `/trabalhar/${slug}`)}
+                      className="flex-1 flex items-center justify-between gap-1.5 px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 text-xs font-bold transition-all cursor-pointer"
+                      title="Copiar link para equipe de trabalho"
+                    >
+                      <span className="flex items-center gap-1 truncate">
+                        <Briefcase className="w-3.5 h-3.5 shrink-0" />
+                        <span>Trabalhar</span>
+                      </span>
+                      {copiedKey === `trabalhar-${event.id}` ? (
+                        <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      ) : (
+                        <Copy className="w-3.5 h-3.5 shrink-0 opacity-70" />
+                      )}
+                    </button>
+                    <a
+                      href={`/trabalhar/${slug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-1.5 rounded-lg text-zinc-400 hover:text-amber-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                      title="Abrir página"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

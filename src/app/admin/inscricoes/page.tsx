@@ -30,6 +30,7 @@ import {
   ArrowLeftRight,
   ArrowDownAZ,
   ArrowUpZA,
+  Copy,
 } from "lucide-react";
 import { User360Modal } from "@/components/User360Modal";
 
@@ -39,6 +40,19 @@ export default function AdminInscricoesPage() {
   const [inscriptions, setInscriptions] = useState<InscriptionParticipant[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Copy state for public URLs
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  const handleCopyLink = (key: string, path: string) => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const fullUrl = `${origin}${path}`;
+    navigator.clipboard.writeText(fullUrl);
+    setCopiedKey(key);
+    setTimeout(() => {
+      setCopiedKey(null);
+    }, 2000);
+  };
 
   // Filters & Sorting
   const [search, setSearch] = useState("");
@@ -268,6 +282,69 @@ export default function AdminInscricoesPage() {
           Atualizar Lista
         </button>
       </div>
+
+      {/* Public Registration Links Banner with 1-click copy */}
+      {activeEvent && (
+        <div className="bg-gradient-to-r from-indigo-50/80 via-white to-amber-50/80 dark:from-indigo-950/30 dark:via-zinc-900 dark:to-amber-950/30 border border-indigo-100 dark:border-indigo-900/40 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs">
+          <div className="space-y-1">
+            <span className="text-[11px] font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-400 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5" />
+              Links Públicos Oficiais ({activeEvent.name})
+            </span>
+            <p className="text-xs text-zinc-600 dark:text-zinc-400">
+              Envie estes links específicos nos grupos de WhatsApp ou redes sociais para preenchimento direto da ficha deste retiro.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Acampar */}
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => handleCopyLink("acampar", `/acampar/${activeEvent.slug || activeEvent.id}`)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
+                title="Copiar link para acampantes"
+              >
+                <Tent className="w-3.5 h-3.5" />
+                <span>Copiar Link Acampar</span>
+                {copiedKey === "acampar" ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
+              </button>
+              <a
+                href={`/acampar/${activeEvent.slug || activeEvent.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 rounded-xl bg-white dark:bg-zinc-800 text-zinc-500 hover:text-indigo-600 border border-zinc-200 dark:border-zinc-700 transition-colors"
+                title="Abrir página pública de Acampar"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+
+            {/* Trabalhar */}
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => handleCopyLink("trabalhar", `/trabalhar/${activeEvent.slug || activeEvent.id}`)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
+                title="Copiar link para equipe de trabalho"
+              >
+                <Briefcase className="w-3.5 h-3.5" />
+                <span>Copiar Link Trabalhar</span>
+                {copiedKey === "trabalhar" ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
+              </button>
+              <a
+                href={`/trabalhar/${activeEvent.slug || activeEvent.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 rounded-xl bg-white dark:bg-zinc-800 text-zinc-500 hover:text-amber-600 border border-zinc-200 dark:border-zinc-700 transition-colors"
+                title="Abrir página pública de Trabalhar"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">

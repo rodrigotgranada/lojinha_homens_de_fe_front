@@ -4,6 +4,8 @@ export type EventStatus = "PROGRAMADO" | "ATIVO" | "ENCERRADO" | "CANCELADO";
 
 export interface EventFormData {
   name: string;
+  slug?: string;
+  city?: string;
   startDate: string;
   endDate: string;
   location: string;

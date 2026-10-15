@@ -157,6 +157,7 @@ export const useCartCheckout = () => {
     error,
     success,
     quickCpf,
+    setQuickCpf,
     isQuickModalOpen,
     setIsQuickModalOpen,
     inactiveCustomerToReactivate,

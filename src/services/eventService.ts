@@ -11,19 +11,18 @@ export const eventService = {
     return events.length > 0 ? events[0] : null;
   },
 
-  setActiveEvent: async (eventId: string): Promise<Event> => {
-    const events = await eventService.getEvents();
-    for (const event of events) {
-      if (event.isActive && event.id !== eventId) {
-        await apiFetch(`/events/${event.id}`, {
-          method: "PATCH",
-          body: JSON.stringify({ isActive: false }),
-        });
-      }
-    }
+  getActiveEvents: async (): Promise<Event[]> => {
+    return apiFetch<Event[]>("/events?isActive=true");
+  },
+
+  getEventBySlug: async (slug: string): Promise<Event> => {
+    return apiFetch<Event>(`/events/by-slug/${encodeURIComponent(slug)}`);
+  },
+
+  setActiveEvent: async (eventId: string, active = true): Promise<Event> => {
     return apiFetch<Event>(`/events/${eventId}`, {
       method: "PATCH",
-      body: JSON.stringify({ isActive: true }),
+      body: JSON.stringify({ isActive: active, status: active ? "ATIVO" : "PROGRAMADO" }),
     });
   },
 

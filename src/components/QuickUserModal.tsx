@@ -6,7 +6,18 @@ import { Input } from "./ui/Input";
 import { Button } from "./ui/Button";
 import { useApi, User } from "@/hooks/useApi";
 import { useApp } from "@/context/AppContext";
-import { UserPlus, Phone, User as UserIcon, Mail, CheckCircle, ArrowLeft } from "lucide-react";
+import { inscriptionService } from "@/services/inscriptionService";
+import {
+  UserPlus,
+  Phone,
+  User as UserIcon,
+  Mail,
+  CheckCircle,
+  ArrowLeft,
+  Tent,
+  Briefcase,
+  ShoppingBag,
+} from "lucide-react";
 
 interface QuickUserModalProps {
   isOpen: boolean;
@@ -22,13 +33,14 @@ export const QuickUserModal: React.FC<QuickUserModalProps> = ({
   onSuccess,
 }) => {
   const api = useApi();
-  const { currentUser } = useApp();
+  const { currentUser, activeEvent } = useApp();
   
   const [step, setStep] = useState<"form" | "confirm">("form");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [participationType, setParticipationType] = useState<"ACAMPANTE" | "TRABALHO" | "CLIENTE">("ACAMPANTE");
   
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -41,6 +53,7 @@ export const QuickUserModal: React.FC<QuickUserModalProps> = ({
       setLastName("");
       setPhone("");
       setEmail("");
+      setParticipationType("ACAMPANTE");
       setStep("form");
     }
   }, [isOpen]);
@@ -103,6 +116,20 @@ export const QuickUserModal: React.FC<QuickUserModalProps> = ({
         email: email.trim() || undefined,
         createdBy: currentUser?.id,
       });
+
+      // Quick auto-registration for the active retreat if selected
+      if (participationType !== "CLIENTE" && activeEvent?.id) {
+        try {
+          await inscriptionService.fastRegisterParticipant(
+            activeEvent.id,
+            newUser.id,
+            participationType,
+            currentUser?.firstName || "PDV"
+          );
+        } catch (subErr) {
+          console.warn("Could not register participant to active event", subErr);
+        }
+      }
 
       if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent("user_added", { detail: newUser }));
@@ -186,6 +213,65 @@ export const QuickUserModal: React.FC<QuickUserModalProps> = ({
             icon={<Mail className="h-5 w-5" />}
           />
 
+          {/* Vínculo com o Retiro */}
+          {activeEvent && (
+            <div className="space-y-2 pt-1">
+              <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 flex items-center justify-between">
+                <span>Vínculo com o Retiro Ativo</span>
+                <span className="text-[11px] font-normal text-indigo-600 dark:text-indigo-400 font-semibold truncate max-w-[200px]">
+                  {activeEvent.name}
+                </span>
+              </label>
+
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setParticipationType("ACAMPANTE")}
+                  className={`p-2.5 rounded-xl border text-xs font-bold flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
+                    participationType === "ACAMPANTE"
+                      ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 ring-2 ring-indigo-500/20"
+                      : "border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                  }`}
+                >
+                  <Tent className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                  <span>Acampante</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setParticipationType("TRABALHO")}
+                  className={`p-2.5 rounded-xl border text-xs font-bold flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
+                    participationType === "TRABALHO"
+                      ? "border-amber-600 bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 ring-2 ring-amber-500/20"
+                      : "border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                  }`}
+                >
+                  <Briefcase className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                  <span>Trabalhador</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setParticipationType("CLIENTE")}
+                  className={`p-2.5 rounded-xl border text-xs font-bold flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
+                    participationType === "CLIENTE"
+                      ? "border-zinc-500 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 ring-2 ring-zinc-500/20"
+                      : "border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                  }`}
+                >
+                  <ShoppingBag className="w-4 h-4 text-zinc-500" />
+                  <span>Apenas Loja</span>
+                </button>
+              </div>
+
+              <p className="text-[11px] text-zinc-500 leading-tight">
+                {participationType === "ACAMPANTE" && "Será registrado e confirmado como participante no retiro."}
+                {participationType === "TRABALHO" && "Será registrado e confirmado na equipe de trabalho do retiro."}
+                {participationType === "CLIENTE" && "Apenas compra no balcão da loja, sem vínculo com o retiro."}
+              </p>
+            </div>
+          )}
+
           <div className="flex gap-3 justify-end mt-4">
             <Button type="button" variant="secondary" onClick={onClose} className="cursor-pointer">
               Cancelar
@@ -220,6 +306,16 @@ export const QuickUserModal: React.FC<QuickUserModalProps> = ({
                 {email.trim() ? email : <span className="italic text-zinc-400 dark:text-zinc-600">Não informado</span>}
               </span>
             </div>
+            {activeEvent && (
+              <div className="flex justify-between items-center pt-2 border-t border-zinc-200 dark:border-zinc-800">
+                <span className="text-zinc-500 dark:text-zinc-400">Vínculo:</span>
+                <span className="font-bold text-zinc-900 dark:text-zinc-100">
+                  {participationType === "ACAMPANTE" && `🏕️ Acampante (${activeEvent.name})`}
+                  {participationType === "TRABALHO" && `💼 Trabalhador (${activeEvent.name})`}
+                  {participationType === "CLIENTE" && "🛍️ Apenas Loja"}
+                </span>
+              </div>
+            )}
           </div>
 
           {error && (

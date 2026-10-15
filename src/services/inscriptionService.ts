@@ -3,6 +3,8 @@ import { apiFetch } from "./apiClient";
 export interface ActiveEventInfo {
   id: string;
   name: string;
+  slug?: string;
+  city?: string;
   location?: string;
   startDate?: string;
   endDate?: string;
@@ -12,6 +14,7 @@ export interface ActiveEventInfo {
 
 export interface PublicInscriptionPayload {
   eventId?: string;
+  eventSlug?: string;
   cpf: string;
   firstName: string;
   lastName: string;
@@ -74,6 +77,10 @@ export const inscriptionService = {
     return apiFetch<ActiveEventInfo | null>("/inscriptions/active-event");
   },
 
+  getEventBySlug: async (slug: string): Promise<ActiveEventInfo | null> => {
+    return apiFetch<ActiveEventInfo | null>(`/inscriptions/event-by-slug/${encodeURIComponent(slug)}`);
+  },
+
   submitInscription: async (
     payload: PublicInscriptionPayload
   ): Promise<{
@@ -132,6 +139,23 @@ export const inscriptionService = {
     return apiFetch<InscriptionParticipant>(`/inscriptions/${id}/type`, {
       method: "PATCH",
       body: JSON.stringify({ type }),
+    });
+  },
+
+  fastRegisterParticipant: async (
+    eventId: string,
+    userId: string,
+    type: "ACAMPANTE" | "TRABALHO",
+    operator = "PDV"
+  ): Promise<any> => {
+    return apiFetch(`/events/${eventId}/participants?operator=${encodeURIComponent(operator)}`, {
+      method: "POST",
+      body: JSON.stringify({
+        userId,
+        type,
+        status: "CONFIRMADO",
+        notes: "Cadastro Rápido de Última Hora (PDV)",
+      }),
     });
   },
 };

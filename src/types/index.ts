@@ -1,6 +1,10 @@
 export interface Event {
   id: string;
   name: string;
+  slug?: string;
+  city?: string;
+  ownerId?: string;
+  adminIds?: string[];
   isActive: boolean;
   startDate?: string;
   endDate?: string;

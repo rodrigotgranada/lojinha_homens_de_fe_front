@@ -81,12 +81,38 @@ export const EventFormModal = () => {
         <Input
           label="Nome da Edição / Retiro"
           id="event-form-name"
-          placeholder="Ex: Homens de Fé - V4"
+          placeholder="Ex: Homens de Fé Pelotas 4"
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           required
           icon={<Tag className="h-5 w-5" />}
         />
+
+        {/* Cidade e Slug */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Input
+            label="Cidade / Polo"
+            id="event-form-city"
+            placeholder="Ex: Pelotas - RS"
+            value={formData.city || ""}
+            onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+            icon={<MapPin className="h-5 w-5" />}
+          />
+
+          <div className="flex flex-col gap-1.5">
+            <Input
+              label="Slug do Link Público"
+              id="event-form-slug"
+              placeholder="Ex: homens-de-fe-pelotas-4"
+              value={formData.slug || ""}
+              onChange={(e) => setFormData({ ...formData, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") })}
+              icon={<Tag className="h-5 w-5" />}
+            />
+            <span className="text-[10px] text-zinc-400">
+              Link de acesso: /acampar/[slug] e /trabalhar/[slug]
+            </span>
+          </div>
+        </div>
 
         {/* Datas */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -136,7 +162,7 @@ export const EventFormModal = () => {
 
         {/* Local */}
         <Input
-          label="Local (opcional)"
+          label="Local / Sítio (opcional)"
           id="event-form-location"
           placeholder="Ex: Sítio São Francisco, Pelotas - RS"
           value={formData.location}

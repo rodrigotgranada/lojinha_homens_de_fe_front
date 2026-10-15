@@ -5,6 +5,8 @@ import { EventFormData } from "../types";
 
 const emptyForm: EventFormData = {
   name: "",
+  slug: "",
+  city: "",
   startDate: "",
   endDate: "",
   location: "",
@@ -30,8 +32,8 @@ export const useEventState = () => {
       const eventList = await api.getEvents();
       // Sort: active first, then newest
       eventList.sort((a, b) => {
-        if (a.isActive) return -1;
-        if (b.isActive) return 1;
+        if (a.isActive && !b.isActive) return -1;
+        if (!a.isActive && b.isActive) return 1;
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
       setEvents(eventList);
@@ -68,6 +70,8 @@ export const useEventState = () => {
     setEditingEvent(event);
     setFormData({
       name: event.name,
+      slug: event.slug ?? "",
+      city: event.city ?? "",
       startDate: event.startDate ? event.startDate.split("T")[0] : "",
       endDate: event.endDate ? event.endDate.split("T")[0] : "",
       location: event.location ?? "",
@@ -91,19 +95,12 @@ export const useEventState = () => {
       return;
     }
 
-    // Enforce exclusivity rule on active events:
-    if (formData.status === "ATIVO") {
-      const alreadyActive = events.find((evt) => evt.isActive && evt.id !== editingEvent?.id);
-      if (alreadyActive) {
-        setFormError(`Já existe um evento ativo: "${alreadyActive.name}". Encerre-o ou altere seu status antes de ativar outro.`);
-        return;
-      }
-    }
-
     setSaving(true);
 
     const payload: Record<string, unknown> = {
       name: formData.name.trim(),
+      slug: formData.slug?.trim() || undefined,
+      city: formData.city?.trim() || undefined,
       location: formData.location.trim() || undefined,
       startDate: formData.startDate || undefined,
       endDate: formData.endDate || undefined,
@@ -119,15 +116,16 @@ export const useEventState = () => {
         if (updated.isActive) {
           setActiveEventState(updated);
         } else if (editingEvent.isActive) {
-          // If it was active and is no longer active, clear context active event
-          setActiveEventState(null);
+          // If it was active and is no longer active, recheck if another active exists
+          const otherActive = events.find((e) => e.id !== editingEvent.id && e.isActive);
+          setActiveEventState(otherActive || null);
         }
 
         setEvents((prev) => {
           const next = prev.map((evt) => (evt.id === editingEvent.id ? { ...evt, ...updated } : evt));
           next.sort((a, b) => {
-            if (a.isActive) return -1;
-            if (b.isActive) return 1;
+            if (a.isActive && !b.isActive) return -1;
+            if (!a.isActive && b.isActive) return 1;
             return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
           });
           return next;
@@ -135,6 +133,8 @@ export const useEventState = () => {
       } else {
         const created = await api.createEvent({
           name: formData.name.trim(),
+          slug: formData.slug?.trim() || undefined,
+          city: formData.city?.trim() || undefined,
           isActive: formData.status === "ATIVO",
           status: formData.status,
           location: formData.location.trim() || undefined,
@@ -149,8 +149,8 @@ export const useEventState = () => {
         setEvents((prev) => {
           const next = [created, ...prev];
           next.sort((a, b) => {
-            if (a.isActive) return -1;
-            if (b.isActive) return 1;
+            if (a.isActive && !b.isActive) return -1;
+            if (!a.isActive && b.isActive) return 1;
             return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
           });
           return next;

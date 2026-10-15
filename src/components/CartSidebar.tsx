@@ -28,6 +28,7 @@ export const CartSidebar: React.FC = () => {
     error,
     success,
     quickCpf,
+    setQuickCpf,
     isQuickModalOpen,
     setIsQuickModalOpen,
     inactiveCustomerToReactivate,
@@ -58,8 +59,9 @@ export const CartSidebar: React.FC = () => {
         <CartCustomerSelector
           cpf={cpf}
           setCpf={setCpf}
-          disabled={cart.length === 0}
+          disabled={false}
           onAddNewUser={(typedCpf) => {
+            setQuickCpf(typedCpf);
             setIsQuickModalOpen(true);
           }}
         />
